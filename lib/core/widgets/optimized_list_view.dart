@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 
 /// Optimized ListView with better performance characteristics
 class OptimizedListView<T> extends StatelessWidget {
@@ -53,7 +54,7 @@ class OptimizedListView<T> extends StatelessWidget {
         addRepaintBoundaries: addRepaintBoundaries,
         addSemanticIndexes: addSemanticIndexes,
         cacheExtent: cacheExtent,
-        semanticChildCount: semanticChildCount ?? items.length,
+        // semanticChildCount: semanticChildCount ?? items.length,
         dragStartBehavior: dragStartBehavior,
         itemCount: items.length,
         itemBuilder: (context, index) => _OptimizedListItem<T>(
@@ -77,7 +78,7 @@ class OptimizedListView<T> extends StatelessWidget {
       addRepaintBoundaries: addRepaintBoundaries,
       addSemanticIndexes: addSemanticIndexes,
       cacheExtent: cacheExtent,
-      semanticChildCount: semanticChildCount ?? items.length,
+      // semanticChildCount: semanticChildCount ?? items.length,
       dragStartBehavior: dragStartBehavior,
       itemCount: items.length,
       itemBuilder: (context, index) => _OptimizedListItem<T>(
@@ -162,7 +163,7 @@ class OptimizedGridView<T> extends StatelessWidget {
       addRepaintBoundaries: addRepaintBoundaries,
       addSemanticIndexes: addSemanticIndexes,
       cacheExtent: cacheExtent,
-      semanticChildCount: semanticChildCount ?? items.length,
+      // semanticChildCount: semanticChildCount ?? items.length,
       dragStartBehavior: dragStartBehavior,
       gridDelegate: gridDelegate,
       itemCount: items.length,
