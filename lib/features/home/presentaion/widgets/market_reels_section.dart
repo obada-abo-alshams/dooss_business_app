@@ -16,10 +16,8 @@ class MarketReelsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ReelCubit>(
-      create: (context) => di.sl<ReelCubit>()..loadReels(),
-      child: BlocBuilder<ReelCubit, ReelState>(
-        builder: (context, state) {
+    return BlocBuilder<ReelCubit, ReelState>(
+      builder: (context, state) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -64,8 +62,7 @@ class MarketReelsSection extends StatelessWidget {
             ],
           );
         },
-      ),
-    );
+      );
   }
 
   Widget _buildReelCard(ReelModel reel, BuildContext context) {
@@ -94,24 +91,41 @@ class MarketReelsSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(12.r),
           child: Stack(
             children: [
-              // Video Thumbnail or Native Video Widget
+              // Video Thumbnail - Use lightweight thumbnail instead of full video
               ClipRRect(
                 borderRadius: BorderRadius.circular(12.r),
-                                        child: IgnorePointer(
-                          child: NativeVideoWidget(
-                            videoUrl: reel.video,
-                            width: 100.w,
-                            height: 120.h,
-                            muted: true, // إيقاف الصوت في الـ preview
-                            loop: true, // إعادة تشغيل الفيديو تلقائياً
-                            onVideoReady: () {
-                              print('✅ MarketReels: Video ready for ${reel.title}');
-                            },
-                            onVideoError: () {
-                              print('❌ MarketReels: Video error for ${reel.title}');
-                            },
+                child: Container(
+                  width: 100.w,
+                  height: 120.h,
+                  color: Colors.black12,
+                  child: Stack(
+                    children: [
+                      // Use a placeholder or thumbnail image instead of video preview
+                      Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.3),
+                              Colors.black.withOpacity(0.7),
+                            ],
                           ),
                         ),
+                      ),
+                      // Video icon to indicate it's a video
+                      Center(
+                        child: Icon(
+                          Icons.videocam,
+                          color: Colors.white.withOpacity(0.8),
+                          size: 24.sp,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
               // Play Button Overlay
               Center(

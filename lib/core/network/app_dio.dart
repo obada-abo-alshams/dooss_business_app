@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../services/token_service.dart';
 import '../services/auth_service.dart';
@@ -9,15 +10,28 @@ class AppDio {
 
   AppDio() {
     _dio = Dio(BaseOptions(
-      connectTimeout: const Duration(seconds: 30),
+      connectTimeout: const Duration(seconds: 15), // Reduced timeout for faster failures
       receiveTimeout: const Duration(seconds: 30),
-      sendTimeout: const Duration(seconds: 30),
-      contentType: Headers.jsonContentType, // استخدام contentType من BaseOptions
+      sendTimeout: const Duration(seconds: 15),
+      contentType: Headers.jsonContentType,
+      // Enable response compression
+      headers: {
+        'Accept-Encoding': 'gzip, deflate, br',
+      },
     ));
-    _addHeaderToDio();
     
+    // Configure HTTP adapter for better performance
+    _dio.httpClientAdapter = IOHttpClientAdapter()
+      ..onHttpClientCreate = (client) {
+        client.maxConnectionsPerHost = 6; // Increase concurrent connections
+        client.connectionTimeout = const Duration(seconds: 15);
+        return client;
+      };
+    
+    _addHeaderToDio();
     _addLogger();
     _addTokenInterceptor();
+    _addCacheInterceptor();
   }                   
 
   _addHeaderToDio() {
@@ -153,6 +167,27 @@ class AppDio {
             }
           }
           handler.next(error);
+        },
+      ),
+    );
+  }
+
+  _addCacheInterceptor() {
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          // Add cache control headers for GET requests
+          if (options.method.toUpperCase() == 'GET') {
+            options.headers['Cache-Control'] = 'max-age=300'; // 5 minutes cache
+          }
+          handler.next(options);
+        },
+        onResponse: (response, handler) {
+          // Log successful responses in debug mode
+          if (response.statusCode == 200) {
+            print('✅ Network: ${response.requestOptions.method} ${response.requestOptions.path} - ${response.statusCode}');
+          }
+          handler.next(response);
         },
       ),
     );

@@ -1,0 +1,56 @@
+# Flutter build optimization configuration
+# This file contains build-time optimizations for better performance
+
+# Tree shaking configuration
+tree-shaking:
+  enabled: true
+  # Remove unused code and assets
+  remove-unused-code: true
+  remove-unused-assets: true
+
+# Asset optimization
+assets:
+  # Compress images during build
+  compress-images: true
+  # Generate different resolutions automatically
+  auto-generate-resolutions: true
+  # Remove unused assets
+  remove-unused: true
+
+# Bundle optimization
+bundle:
+  # Split bundles for better loading
+  split-bundles: true
+  # Compress bundles
+  compress: true
+  # Use deferred loading where possible
+  deferred-loading: true
+
+# Performance optimizations
+performance:
+  # Enable ahead-of-time compilation
+  aot-compilation: true
+  # Optimize for size vs speed (size|speed|balanced)
+  optimization-target: balanced
+  # Enable profile guided optimization
+  profile-guided-optimization: false
+
+# Platform-specific optimizations
+android:
+  # Enable R8/ProGuard
+  minify: true
+  shrink-resources: true
+  # Target specific architectures
+  target-architectures:
+    - arm64-v8a
+    - armeabi-v7a
+  # Optimize APK size
+  optimize-apk-size: true
+
+ios:
+  # Enable bitcode
+  enable-bitcode: false
+  # Strip debug symbols
+  strip-debug-symbols: true
+  # Optimize for size
+  optimize-for-size: true

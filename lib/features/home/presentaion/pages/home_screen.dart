@@ -58,38 +58,26 @@ class HomeScreen extends StatelessWidget {
                   // Show different content based on selected tab
                   switch (homeState.currentIndex) {
                                                     case 0: // Home
-                                  return BlocProvider<CarCubit>(
-                                    create: (context) => di.sl<CarCubit>()..loadCars(),
-                                    child: BlocProvider<ProductCubit>(
-                                      create: (context) => di.sl<ProductCubit>()..loadProducts(),
-                                      child: BlocProvider<ServiceCubit>(
-                                        create: (context) => di.sl<ServiceCubit>()..loadServices(limit: 5),
-                                        child: BlocProvider<ReelCubit>(
-                                          create: (context) => di.sl<ReelCubit>()..loadReels(),
-                                          child: SingleChildScrollView(
-                                            child: Column(
-                                              children: [
-                                                Padding(
-                                                  padding: EdgeInsets.all(16.w),
-                                                  child: const HomeBanner(),
-                                                ),
-                                                const MarketReelsSection(),
-                                                SizedBox(height: 24.h),
-                                                BrowseByTypeSection(
-                                                  selectedIndex: homeState.selectedBrowseType,
-                                                  onTap: (index) {
-                                                    context.read<HomeCubit>().updateSelectedBrowseType(index);
-                                                  },
-                                                ),
-                                                SizedBox(height: 24.h),
-                                                const ContentSection(),
-                                                SizedBox(height: 24.h),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
+                                  return MultiBlocProvider(
+                                    providers: [
+                                      BlocProvider<CarCubit>(
+                                        create: (context) => di.sl<CarCubit>(),
+                                        lazy: false,
                                       ),
-                                    ),
+                                      BlocProvider<ProductCubit>(
+                                        create: (context) => di.sl<ProductCubit>(),
+                                        lazy: false,
+                                      ),
+                                      BlocProvider<ServiceCubit>(
+                                        create: (context) => di.sl<ServiceCubit>(),
+                                        lazy: false,
+                                      ),
+                                      BlocProvider<ReelCubit>(
+                                        create: (context) => di.sl<ReelCubit>(),
+                                        lazy: false,
+                                      ),
+                                    ],
+                                    child: const _HomeTabContent(),
                                   );
                     case 1: // Services
                       return BlocProvider<ServiceCubit>(
@@ -128,6 +116,73 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
 
+    );
+  }
+}
+
+/// Optimized home tab content with lazy loading and better performance
+class _HomeTabContent extends StatefulWidget {
+  const _HomeTabContent();
+
+  @override
+  State<_HomeTabContent> createState() => _HomeTabContentState();
+}
+
+class _HomeTabContentState extends State<_HomeTabContent>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load data after the first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
+  }
+
+  void _loadData() {
+    context.read<CarCubit>().loadCars();
+    context.read<ProductCubit>().loadProducts();
+    context.read<ServiceCubit>().loadServices(limit: 5);
+    context.read<ReelCubit>().loadReels();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    
+    return RefreshIndicator(
+      onRefresh: () async {
+        _loadData();
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(16.w),
+              child: const HomeBanner(),
+            ),
+            const MarketReelsSection(),
+            SizedBox(height: 24.h),
+            BlocBuilder<HomeCubit, HomeState>(
+              builder: (context, homeState) {
+                return BrowseByTypeSection(
+                  selectedIndex: homeState.selectedBrowseType,
+                  onTap: (index) {
+                    context.read<HomeCubit>().updateSelectedBrowseType(index);
+                  },
+                );
+              },
+            ),
+            SizedBox(height: 24.h),
+            const ContentSection(),
+            SizedBox(height: 24.h),
+          ],
+        ),
+      ),
     );
   }
 }

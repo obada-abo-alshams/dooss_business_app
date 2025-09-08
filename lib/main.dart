@@ -9,10 +9,23 @@ import 'features/home/presentaion/manager/car_cubit.dart';
 import 'core/localization/language_cubit.dart';
 import 'core/localization/app_localizations.dart';
 import 'core/services/navigation_service.dart';
+import 'core/utils/performance_monitor.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize dependency injection
   await di.init();
+  
+  // Initialize performance monitoring
+  PerformanceMonitor().init();
+  
+  // Set up error handling
+  FlutterError.onError = (FlutterErrorDetails details) {
+    // In production, you might want to send this to a crash reporting service
+    FlutterError.presentError(details);
+  };
+  
   runApp(const MyApp());
 }
 
