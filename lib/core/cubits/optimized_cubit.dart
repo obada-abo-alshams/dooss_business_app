@@ -6,7 +6,7 @@ abstract class OptimizedCubit<State> extends Cubit<State> {
 
   /// High-performance state emission with automatic comparison
   void emitOptimized(State newState) {
-    if (state != newState) {
+    if (!isClosed && state != newState) {
       emit(newState);
     }
   }
@@ -20,7 +20,9 @@ abstract class OptimizedCubit<State> extends Cubit<State> {
 
   /// Batch multiple state changes into one emission
   void batchEmit(State Function(State currentState) stateBuilder) {
-    final newState = stateBuilder(state);
-    emitOptimized(newState);
+    if (!isClosed) {
+      final newState = stateBuilder(state);
+      emitOptimized(newState);
+    }
   }
 }

@@ -1,6 +1,6 @@
 import 'dart:developer';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dartz/dartz.dart';
+import 'package:dooss_business_app/core/cubits/optimized_cubit.dart';
 
 import '../../../../core/services/token_service.dart';
 import '../../../../core/services/auth_service.dart';
@@ -13,21 +13,21 @@ import '../../data/models/user_model.dart';
 import '../pages/verify_otp_page.dart';
 import '../manager/auth_state.dart';
 
-class AuthCubit extends Cubit<AuthState> {
+class AuthCubit extends OptimizedCubit<AuthState> {
   final AuthRemoteDataSourceImp _authRemoteDataSource;
 
   AuthCubit(this._authRemoteDataSource) : super(AuthState());
 
   /// تبديل إظهار/إخفاء كلمة المرور
   void togglePasswordVisibility() {
-    emit(state.copyWith(
+    emitOptimized(state.copyWith(
       isObscurePassword: !(state.isObscurePassword ?? false),
     ));
   }
 
   /// تبديل حالة "تذكرني"
   void toggleRememberMe() {
-    emit(state.copyWith(
+    emitOptimized(state.copyWith(
       isRememberMe: !(state.isRememberMe ?? false),
     ));
   }
@@ -35,7 +35,7 @@ class AuthCubit extends Cubit<AuthState> {
   /// تسجيل الدخول
   Future<void> signIn(SigninParams params) async {
     log("🚀 AuthCubit - Starting sign in process");
-    emit(state.copyWith(isLoading: true));
+    safeEmit(state.copyWith(isLoading: true));
 
     final Either<Failure, AuthResponceModel> result = 
         await _authRemoteDataSource.signin(params);
@@ -43,7 +43,7 @@ class AuthCubit extends Cubit<AuthState> {
     result.fold(
       (failure) {
         log("❌ AuthCubit - Sign in failed: ${failure.message}");
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           isLoading: false,
           error: failure.message,
           checkAuthState: CheckAuthState.error,
@@ -80,7 +80,7 @@ class AuthCubit extends Cubit<AuthState> {
           log("💾 AuthCubit - User data saving temporarily disabled");
         }
         
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           isLoading: false,
           checkAuthState: CheckAuthState.signinSuccess,
           success: authResponse.message,
@@ -92,7 +92,7 @@ class AuthCubit extends Cubit<AuthState> {
   /// إنشاء حساب جديد
   Future<void> register(CreateAccountParams params) async {
     log("🚀 AuthCubit - Starting register process");
-    emit(state.copyWith(isLoading: true));
+    safeEmit(state.copyWith(isLoading: true));
 
     final Either<Failure, UserModel> result = 
         await _authRemoteDataSource.register(params);
@@ -100,7 +100,7 @@ class AuthCubit extends Cubit<AuthState> {
     result.fold(
       (failure) {
         log("❌ AuthCubit - Register failed: ${failure.message}");
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           isLoading: false,
           error: failure.message,
           checkAuthState: CheckAuthState.error,
@@ -109,7 +109,7 @@ class AuthCubit extends Cubit<AuthState> {
       (userModel) async {
         log("✅ AuthCubit - Register successful, emitting success state");
         // في حالة التسجيل، لا نحفظ token لأن المستخدم يحتاج للتحقق من OTP أولاً
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           isLoading: false,
           checkAuthState: CheckAuthState.success,
           success: "Account created successfully! Please verify your phone number.",
@@ -121,7 +121,7 @@ class AuthCubit extends Cubit<AuthState> {
   /// طلب كود التحقق (OTP) لرقم الهاتف
   Future<void> resetPassword(String phoneNumber) async {
     log("🚀 AuthCubit - Starting reset password process for: $phoneNumber");
-    emit(state.copyWith(isLoading: true));
+    safeEmit(state.copyWith(isLoading: true));
 
     final Either<Failure, Map<String, dynamic>> result = 
         await _authRemoteDataSource.resetPassword(phoneNumber);
@@ -129,7 +129,7 @@ class AuthCubit extends Cubit<AuthState> {
     result.fold(
       (failure) {
         log("❌ AuthCubit - Reset password failed: ${failure.message}");
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           isLoading: false,
           error: failure.message,
           checkAuthState: CheckAuthState.error,
@@ -137,7 +137,7 @@ class AuthCubit extends Cubit<AuthState> {
       },
       (successResponse) {
         log("✅ AuthCubit - Reset password successful");
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           isLoading: false,
           checkAuthState: CheckAuthState.success,
           success: successResponse["message"] ?? "OTP sent successfully",
@@ -149,7 +149,7 @@ class AuthCubit extends Cubit<AuthState> {
   /// التحقق من كود OTP
   Future<void> verifyOtp(VerifycodeParams params) async {
     log("🚀 AuthCubit - Starting OTP verification for: ${params.phoneNumber}");
-    emit(state.copyWith(isLoading: true));
+    safeEmit(state.copyWith(isLoading: true));
 
     final Either<Failure, String> result = 
         await _authRemoteDataSource.verifyOtp(params);
@@ -157,7 +157,7 @@ class AuthCubit extends Cubit<AuthState> {
     result.fold(
       (failure) {
         log("❌ AuthCubit - OTP verification failed: ${failure.message}");
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           isLoading: false,
           error: failure.message,
           checkAuthState: CheckAuthState.error,
@@ -167,7 +167,7 @@ class AuthCubit extends Cubit<AuthState> {
         log("✅ AuthCubit - OTP verification successful");
         // بعد التحقق من OTP، نحفظ الـ token إذا كان موجوداً في الـ response
         // يمكن تعديل هذا حسب هيكل الـ API response
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           isLoading: false,
           checkAuthState: CheckAuthState.success,
           success: successMessage,
@@ -179,7 +179,7 @@ class AuthCubit extends Cubit<AuthState> {
   /// التحقق من كود OTP مع إعادة تعيين كلمة المرور (لـ forget password flow)
   Future<void> verifyOtpForResetPassword(ResetPasswordParams params) async {
     log("🚀 AuthCubit - Starting OTP verification for reset password: ${params.phoneNumber}");
-    emit(state.copyWith(isLoading: true));
+    safeEmit(state.copyWith(isLoading: true));
 
     final Either<Failure, String> result = 
         await _authRemoteDataSource.verifyOtpForResetPassword(params);
@@ -187,7 +187,7 @@ class AuthCubit extends Cubit<AuthState> {
     result.fold(
       (failure) {
         log("❌ AuthCubit - OTP verification for reset password failed: ${failure.message}");
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           isLoading: false,
           error: failure.message,
           checkAuthState: CheckAuthState.error,
@@ -195,7 +195,7 @@ class AuthCubit extends Cubit<AuthState> {
       },
       (successMessage) {
         log("✅ AuthCubit - OTP verification for reset password successful");
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           isLoading: false,
           checkAuthState: CheckAuthState.success,
           success: successMessage,
@@ -208,7 +208,7 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> createNewPassword(ResetPasswordParams params) async {
     log("🚀 AuthCubit - Starting new password creation");
     
-    emit(state.copyWith(isLoading: true));
+    safeEmit(state.copyWith(isLoading: true));
 
     final Either<Failure, String> result = 
         await _authRemoteDataSource.newPassword(params);
@@ -216,7 +216,7 @@ class AuthCubit extends Cubit<AuthState> {
     result.fold(
       (failure) {
         log("❌ AuthCubit - New password creation failed: ${failure.message}");
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           isLoading: false,
           error: failure.message,
           checkAuthState: CheckAuthState.error,
@@ -224,7 +224,7 @@ class AuthCubit extends Cubit<AuthState> {
       },
       (successMessage) {
         log("✅ AuthCubit - New password creation successful");
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           isLoading: false,
           checkAuthState: CheckAuthState.success,
           success: successMessage,
@@ -236,7 +236,7 @@ class AuthCubit extends Cubit<AuthState> {
   /// إعادة إرسال كود OTP
   Future<void> resendOtp(String phoneNumber) async {
     log("🚀 AuthCubit - Starting resend OTP for: $phoneNumber");
-    emit(state.copyWith(isLoading: true));
+    safeEmit(state.copyWith(isLoading: true));
 
     final Either<Failure, String> result = 
         await _authRemoteDataSource.resendOtp(phoneNumber);
@@ -244,7 +244,7 @@ class AuthCubit extends Cubit<AuthState> {
     result.fold(
       (failure) {
         log("❌ AuthCubit - Resend OTP failed: ${failure.message}");
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           isLoading: false,
           error: failure.message,
           checkAuthState: CheckAuthState.error,
@@ -252,7 +252,7 @@ class AuthCubit extends Cubit<AuthState> {
       },
       (successMessage) {
         log("✅ AuthCubit - Resend OTP successful");
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           isLoading: false,
           checkAuthState: CheckAuthState.resendOtpSuccess,
           success: successMessage,
@@ -264,7 +264,7 @@ class AuthCubit extends Cubit<AuthState> {
   /// تسجيل الخروج
   Future<void> logout() async {
     log("🚀 AuthCubit - Starting logout process");
-    emit(state.copyWith(isLoading: true));
+    safeEmit(state.copyWith(isLoading: true));
 
     try {
       // الحصول على الـ refresh token
@@ -302,7 +302,7 @@ class AuthCubit extends Cubit<AuthState> {
         log("⚠️ AuthCubit - No refresh token found, clearing local data only");
         // إذا لم يكن هناك refresh token، نقوم بحذف البيانات محلياً فقط
         await _clearLocalData();
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           isLoading: false,
           checkAuthState: CheckAuthState.logoutSuccess,
           success: "Logged out successfully",
@@ -337,7 +337,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   /// إعادة تعيين الحالة إلى الحالة الأولية
   void resetState() {
-    emit(AuthState());
+    emitOptimized(AuthState());
   }
 
   @override

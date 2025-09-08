@@ -1,15 +1,15 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dooss_business_app/core/cubits/optimized_cubit.dart';
 import '../../data/data_source/reel_remote_data_source.dart';
 import '../../data/models/reel_model.dart';
 import 'reel_state.dart';
 
-class ReelCubit extends Cubit<ReelState> {
+class ReelCubit extends OptimizedCubit<ReelState> {
   final ReelRemoteDataSource dataSource;
 
   ReelCubit({required this.dataSource}) : super(ReelState.initial());
 
   void loadReels({int page = 1, int pageSize = 20}) async {
-    emit(state.copyWith(isLoading: true, error: null));
+    safeEmit(state.copyWith(isLoading: true, error: null));
     
     final result = await dataSource.fetchReels(
       page: page,
@@ -20,7 +20,7 @@ class ReelCubit extends Cubit<ReelState> {
     result.fold(
       (failure) {
         print('❌ ReelCubit: Error loading reels: ${failure.message}');
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           error: failure.message,
           isLoading: false,
         ));
@@ -33,7 +33,7 @@ class ReelCubit extends Cubit<ReelState> {
             ? reelsResponse.results 
             : [...state.reels, ...reelsResponse.results];
         
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           reels: updatedReels,
           isLoading: false,
           hasNextPage: reelsResponse.next != null,
@@ -59,12 +59,12 @@ class ReelCubit extends Cubit<ReelState> {
     result.fold(
       (failure) {
         print('❌ ReelCubit: Error loading more reels: ${failure.message}');
-        emit(state.copyWith(error: failure.message));
+        safeEmit(state.copyWith(error: failure.message));
       },
       (reelsResponse) {
         print('✅ ReelCubit: Successfully loaded ${reelsResponse.results.length} more reels');
         
-        emit(state.copyWith(
+        safeEmit(state.copyWith(
           reels: [...state.reels, ...reelsResponse.results],
           hasNextPage: reelsResponse.next != null,
           currentPage: nextPage,
@@ -80,7 +80,7 @@ class ReelCubit extends Cubit<ReelState> {
   }
 
   void clearError() {
-    emit(state.copyWith(error: null));
+          safeEmit(state.copyWith(error: null));
   }
 
   void resetState() {

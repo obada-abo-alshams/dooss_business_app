@@ -1,24 +1,24 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dooss_business_app/core/cubits/optimized_cubit.dart';
 import 'service_state.dart';
 import 'package:dooss_business_app/features/home/data/data_source/service_remote_data_source.dart';
 import 'package:dooss_business_app/core/services/location_service.dart';
 import 'package:dooss_business_app/features/home/data/models/service_model.dart';
 import 'package:geolocator/geolocator.dart';
 
-class ServiceCubit extends Cubit<ServiceState> {
+class ServiceCubit extends OptimizedCubit<ServiceState> {
   final ServiceRemoteDataSource dataSource;
   
   ServiceCubit(this.dataSource) : super(const ServiceState());
 
   void loadServices({int limit = 5}) async {
-    emit(state.copyWith(isLoading: true, error: null));
+    safeEmit(state.copyWith(isLoading: true, error: null));
     try {
       print('🔍 ServiceCubit: Starting to load services (limit: $limit)...');
       
       // Check location permission first
       bool hasPermission = await _checkLocationPermission();
       if (!hasPermission) {
-                 emit(state.copyWith(
+                 safeEmit(state.copyWith(
            error: 'location_permission_required',
            isLoading: false,
          ));
@@ -40,13 +40,13 @@ class ServiceCubit extends Cubit<ServiceState> {
       print('✅ Services loaded successfully: ${services.length} services found');
       
       // Use real API data only - no fake data
-      emit(state.copyWith(services: services, isLoading: false));
+      safeEmit(state.copyWith(services: services, isLoading: false));
       
       // Calculate distances for all services
       await calculateServiceDistances();
     } catch (e) {
       print('❌ ServiceCubit error: $e');
-      emit(state.copyWith(error: 'Failed to load services: ${e.toString()}', isLoading: false));
+      safeEmit(state.copyWith(error: 'Failed to load services: ${e.toString()}', isLoading: false));
     }
   }
 
@@ -60,7 +60,7 @@ class ServiceCubit extends Cubit<ServiceState> {
     String? type,
     int radius = 5000,
   }) async {
-    emit(state.copyWith(isLoading: true, error: null));
+    safeEmit(state.copyWith(isLoading: true, error: null));
     try {
       final services = await dataSource.fetchNearbyServices(
         lat: lat,
@@ -68,14 +68,14 @@ class ServiceCubit extends Cubit<ServiceState> {
         type: type,
         radius: radius,
       );
-      emit(state.copyWith(
+      safeEmit(state.copyWith(
         services: services,
         isLoading: false,
         selectedFilter: 'All',
       ));
     } catch (e) {
       print('ServiceCubit loadNearbyServices error: $e');
-      emit(state.copyWith(error: 'Failed to load nearby services', isLoading: false));
+      safeEmit(state.copyWith(error: 'Failed to load nearby services', isLoading: false));
     }
   }
 
@@ -83,13 +83,13 @@ class ServiceCubit extends Cubit<ServiceState> {
     emit(state.copyWith(isLoadingDetails: true, error: null));
     try {
       final service = await dataSource.fetchServiceDetails(serviceId);
-      emit(state.copyWith(
+      safeEmit(state.copyWith(
         selectedService: service,
         isLoadingDetails: false,
       ));
     } catch (e) {
       print('ServiceCubit loadServiceDetails error: $e');
-      emit(state.copyWith(error: 'Failed to load service details', isLoadingDetails: false));
+      safeEmit(state.copyWith(error: 'Failed to load service details', isLoadingDetails: false));
     }
   }
 
@@ -114,7 +114,7 @@ class ServiceCubit extends Cubit<ServiceState> {
         servicesWithDistance.add(serviceWithDistance);
       }
       
-      emit(state.copyWith(services: servicesWithDistance));
+      safeEmit(state.copyWith(services: servicesWithDistance));
     } catch (e) {
       print('❌ Error calculating distances: $e');
     }
@@ -135,7 +135,7 @@ class ServiceCubit extends Cubit<ServiceState> {
           limit: limit,
           offset: 0,
         );
-        emit(state.copyWith(services: services, isLoading: false));
+        safeEmit(state.copyWith(services: services, isLoading: false));
              } else if (filter == 'mechanics' || filter == 'Mechanics') {
         final services = await dataSource.fetchNearbyServices(
           lat: position.latitude,
@@ -145,7 +145,7 @@ class ServiceCubit extends Cubit<ServiceState> {
           limit: limit,
           offset: 0,
         );
-        emit(state.copyWith(services: services, isLoading: false));
+        safeEmit(state.copyWith(services: services, isLoading: false));
              } else if (filter == 'petrol' || filter == 'Petrol') {
         final services = await dataSource.fetchNearbyServices(
           lat: position.latitude,
@@ -155,7 +155,7 @@ class ServiceCubit extends Cubit<ServiceState> {
           limit: limit,
           offset: 0,
         );
-        emit(state.copyWith(services: services, isLoading: false));
+        safeEmit(state.copyWith(services: services, isLoading: false));
              } else if (filter == 'openNow' || filter == 'Open Now') {
         // For "Open Now", load all services and filter locally
         final services = await dataSource.fetchNearbyServices(
@@ -166,11 +166,11 @@ class ServiceCubit extends Cubit<ServiceState> {
           offset: 0,
         );
         final openServices = services.where((service) => service.openNow).toList();
-        emit(state.copyWith(services: openServices, isLoading: false));
+        safeEmit(state.copyWith(services: openServices, isLoading: false));
       }
     } catch (e) {
       print('❌ ServiceCubit filterServices error: $e');
-      emit(state.copyWith(error: 'Failed to filter services', isLoading: false));
+      safeEmit(state.copyWith(error: 'Failed to filter services', isLoading: false));
     }
   }
 

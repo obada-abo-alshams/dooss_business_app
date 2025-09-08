@@ -22,24 +22,36 @@ class ResendTimerWidget extends StatefulWidget {
 class _ResendTimerWidgetState extends State<ResendTimerWidget> {
   int seconds = 60;
   bool isTimerFinished = false;
-  _timerPeriodec(int seconds, bool isfinish) {
-    Timer.periodic(const Duration(seconds: 1), (timer) {
-      // setState(() {
-      //   if (seconds > 0) {
-      //     seconds--;
-      //   } else {
-      //     isfinish = true;
+  Timer? _timer;
 
-      //     timer.cancel();
-      //   }
-      // });
+  void _startTimer() {
+    _timer?.cancel(); // Cancel any existing timer
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          if (seconds > 0) {
+            seconds--;
+          } else {
+            isTimerFinished = true;
+            timer.cancel();
+          }
+        });
+      } else {
+        timer.cancel();
+      }
     });
   }
 
   @override
   void initState() {
-    _timerPeriodec(seconds, isTimerFinished);
     super.initState();
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -51,9 +63,9 @@ class _ResendTimerWidgetState extends State<ResendTimerWidget> {
             setState(() {
               seconds = 60;
               isTimerFinished = false;
-              _timerPeriodec(60, isTimerFinished);
             });
-            context.read<AuthCubit>().resetPassword(widget.phoneNumber.toString() );
+            _startTimer();
+            context.read<AuthCubit>().resetPassword(widget.phoneNumber.toString());
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,

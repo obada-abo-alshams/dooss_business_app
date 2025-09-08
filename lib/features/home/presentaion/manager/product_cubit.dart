@@ -134,57 +134,14 @@ class ProductCubit extends OptimizedCubit<ProductState> {
         ));
       },
       (product) async {
-        // Load related products and reviews in parallel
-        final relatedProductsResult = await dataSource.fetchRelatedProducts(productId);
-        final reviewsResult = await dataSource.fetchProductReviews(productId);
+        // First emit the main product details immediately
+        safeEmit(state.copyWith(
+          selectedProduct: product,
+          isLoading: false,
+        ));
         
-        relatedProductsResult.fold(
-          (relatedFailure) {
-            // If related products fail, still show product details but log the error
-            reviewsResult.fold(
-              (reviewFailure) {
-                // Both related and reviews failed
-                safeEmit(state.copyWith(
-                  selectedProduct: product,
-                  relatedProducts: [],
-                  productReviews: [],
-                  isLoading: false,
-                ));
-              },
-              (reviews) {
-                // Only related products failed
-                safeEmit(state.copyWith(
-                  selectedProduct: product,
-                  relatedProducts: [],
-                  productReviews: reviews,
-                  isLoading: false,
-                ));
-              },
-            );
-          },
-          (relatedProducts) {
-            reviewsResult.fold(
-              (reviewFailure) {
-                // Only reviews failed
-                safeEmit(state.copyWith(
-                  selectedProduct: product,
-                  relatedProducts: relatedProducts,
-                  productReviews: [],
-                  isLoading: false,
-                ));
-              },
-              (reviews) {
-                // Everything succeeded
-                batchEmit((currentState) => currentState.copyWith(
-                  selectedProduct: product,
-                  relatedProducts: relatedProducts,
-                  productReviews: reviews,
-                  isLoading: false,
-                ));
-              },
-            );
-          },
-        );
+        // Then load additional data asynchronously
+        _loadAdditionalProductData(productId);
       },
     );
   }
@@ -193,5 +150,50 @@ class ProductCubit extends OptimizedCubit<ProductState> {
     // Here you would typically update the favorite status in the backend
     // For now, we'll just emit the same state
     emitOptimized(state.copyWith());
+  }
+
+  /// Load additional product data (related products and reviews) safely
+  Future<void> _loadAdditionalProductData(int productId) async {
+    // Load related products and reviews in parallel
+    final relatedProductsResult = await dataSource.fetchRelatedProducts(productId);
+    final reviewsResult = await dataSource.fetchProductReviews(productId);
+    
+    // Only emit if cubit is still active
+    if (!isClosed) {
+      relatedProductsResult.fold(
+        (relatedFailure) {
+          // If related products fail, still show product details
+          reviewsResult.fold(
+            (reviewFailure) {
+              // Both related and reviews failed - no additional emit needed
+              // Product details are already shown
+            },
+            (reviews) {
+              // Only related products failed
+              safeEmit(state.copyWith(
+                productReviews: reviews,
+              ));
+            },
+          );
+        },
+        (relatedProducts) {
+          reviewsResult.fold(
+            (reviewFailure) {
+              // Only reviews failed
+              safeEmit(state.copyWith(
+                relatedProducts: relatedProducts,
+              ));
+            },
+            (reviews) {
+              // Everything succeeded
+              batchEmit((currentState) => currentState.copyWith(
+                relatedProducts: relatedProducts,
+                productReviews: reviews,
+              ));
+            },
+          );
+        },
+      );
+    }
   }
 }

@@ -1,19 +1,19 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dooss_business_app/core/cubits/optimized_cubit.dart';
 import 'home_state.dart';
 
 // Cubit
-class HomeCubit extends Cubit<HomeState> {
+class HomeCubit extends OptimizedCubit<HomeState> {
   HomeCubit() : super(const HomeState());
 
   void updateCurrentIndex(int index) {
-    emit(state.copyWith(currentIndex: index));
+    emitOptimized(state.copyWith(currentIndex: index));
   }
 
   void updateSelectedBrowseType(int type) {
-    emit(state.copyWith(selectedBrowseType: type));
+    emitOptimized(state.copyWith(selectedBrowseType: type));
   }
 
   void setLoading(bool loading) {
-    emit(state.copyWith(isLoading: loading));
+    safeEmit(state.copyWith(isLoading: loading));
   }
 }

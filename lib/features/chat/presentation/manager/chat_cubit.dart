@@ -1,11 +1,11 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dooss_business_app/core/cubits/optimized_cubit.dart';
 import 'chat_state.dart';
 import '../../data/data_source/chat_remote_data_source.dart';
 import '../../../../core/services/websocket_service.dart';
 import '../../../../core/services/locator_service.dart' as di;
 import '../../../../core/services/token_service.dart';
 
-class ChatCubit extends Cubit<ChatState> {
+class ChatCubit extends OptimizedCubit<ChatState> {
   final ChatRemoteDataSource dataSource;
   final WebSocketService _webSocketService = di.sl<WebSocketService>();
   
@@ -17,12 +17,12 @@ class ChatCubit extends Cubit<ChatState> {
   void _setupWebSocketCallbacks() {
     _webSocketService.onConnected = () {
       print('✅ ChatCubit: WebSocket connected');
-      emit(state.copyWith(isWebSocketConnected: true));
+      safeEmit(state.copyWith(isWebSocketConnected: true));
     };
 
     _webSocketService.onDisconnected = () {
       print('🔌 ChatCubit: WebSocket disconnected');
-      emit(state.copyWith(isWebSocketConnected: false));
+      safeEmit(state.copyWith(isWebSocketConnected: false));
     };
 
     _webSocketService.onMessageReceived = (message) {
@@ -33,43 +33,43 @@ class ChatCubit extends Cubit<ChatState> {
 
     _webSocketService.onError = (error) {
       print('❌ ChatCubit: WebSocket error: $error');
-      emit(state.copyWith(error: 'WebSocket error: $error'));
+      safeEmit(state.copyWith(error: 'WebSocket error: $error'));
     };
   }
 
   void loadChats() async {
     print('ChatCubit - loadChats() called');
-    emit(state.copyWith(isLoading: true, error: null));
+    safeEmit(state.copyWith(isLoading: true, error: null));
     try {
       print('ChatCubit - Calling dataSource.fetchChats()');
       final chats = await dataSource.fetchChats();
       print('ChatCubit - Received ${chats.length} chats from dataSource');
-      emit(state.copyWith(
+      safeEmit(state.copyWith(
         chats: chats,
         isLoading: false,
       ));
       print('ChatCubit - State updated with ${state.chats.length} chats');
     } catch (e) {
       print('ChatCubit error: $e');
-      emit(state.copyWith(error: 'Failed to load chats', isLoading: false));
+      safeEmit(state.copyWith(error: 'Failed to load chats', isLoading: false));
     }
   }
 
   void loadMessages(int chatId) async {
     print('ChatCubit - loadMessages() called with chatId: $chatId');
-    emit(state.copyWith(isLoadingMessages: true, error: null, selectedChatId: chatId));
+    safeEmit(state.copyWith(isLoadingMessages: true, error: null, selectedChatId: chatId));
     try {
       print('ChatCubit - Calling dataSource.fetchMessages()');
       final messages = await dataSource.fetchMessages(chatId);
       print('ChatCubit - Received ${messages.length} messages from dataSource');
-      emit(state.copyWith(
+      safeEmit(state.copyWith(
         messages: messages,
         isLoadingMessages: false,
       ));
       print('ChatCubit - State updated with ${state.messages.length} messages');
     } catch (e) {
       print('ChatCubit loadMessages error: $e');
-      emit(state.copyWith(error: 'Failed to load messages', isLoadingMessages: false));
+      safeEmit(state.copyWith(error: 'Failed to load messages', isLoadingMessages: false));
     }
   }
 
@@ -84,17 +84,17 @@ class ChatCubit extends Cubit<ChatState> {
       print('ChatCubit - Calling dataSource.sendMessage()');
       final message = await dataSource.sendMessage(state.selectedChatId!, content);
       final updatedMessages = [...state.messages, message];
-      emit(state.copyWith(messages: updatedMessages));
+      safeEmit(state.copyWith(messages: updatedMessages));
       print('ChatCubit - Message sent successfully, state updated');
     } catch (e) {
       print('ChatCubit sendMessage error: $e');
-      emit(state.copyWith(error: 'Failed to send message'));
+      safeEmit(state.copyWith(error: 'Failed to send message'));
     }
   }
 
   void createChat(int dealerUserId) async {
     print('ChatCubit - createChat() called with dealerUserId: $dealerUserId');
-    emit(state.copyWith(isCreatingChat: true, error: null));
+    safeEmit(state.copyWith(isCreatingChat: true, error: null));
     
     try {
       final chat = await dataSource.createChat(dealerUserId);
@@ -102,7 +102,7 @@ class ChatCubit extends Cubit<ChatState> {
       
       // Add to chats list
       final updatedChats = [...state.chats, chat];
-      emit(state.copyWith(
+      safeEmit(state.copyWith(
         chats: updatedChats,
         selectedChatId: chat.id,
         isCreatingChat: false,
@@ -113,7 +113,7 @@ class ChatCubit extends Cubit<ChatState> {
       
     } catch (e) {
       print('ChatCubit createChat error: $e');
-      emit(state.copyWith(
+      safeEmit(state.copyWith(
         error: 'Failed to create chat: $e',
         isCreatingChat: false,
       ));
@@ -126,7 +126,7 @@ class ChatCubit extends Cubit<ChatState> {
       await _webSocketService.connect(chatId, accessToken);
     } else {
       print('❌ ChatCubit: No access token found, cannot connect to WebSocket');
-      emit(state.copyWith(error: 'No access token found'));
+      safeEmit(state.copyWith(error: 'No access token found'));
     }
   }
 
@@ -143,7 +143,7 @@ class ChatCubit extends Cubit<ChatState> {
   void sendMessageViaWebSocket(String text) {
     if (!state.isWebSocketConnected) {
       print('ChatCubit: WebSocket not connected, cannot send message');
-      emit(state.copyWith(error: 'Not connected to chat server'));
+      safeEmit(state.copyWith(error: 'Not connected to chat server'));
       return;
     }
     
@@ -157,7 +157,7 @@ class ChatCubit extends Cubit<ChatState> {
   void clearSelectedChat() {
     print('ChatCubit - clearSelectedChat() called');
     disconnectWebSocket();
-    emit(state.copyWith(
+    safeEmit(state.copyWith(
       selectedChatId: null,
       messages: [],
       isLoadingMessages: false,
