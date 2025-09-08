@@ -1,6 +1,8 @@
+import 'package:dartz/dartz.dart';
 import 'package:dooss_business_app/core/network/api.dart';
 import 'package:dooss_business_app/core/network/api_request.dart';
 import 'package:dooss_business_app/core/network/api_urls.dart';
+import 'package:dooss_business_app/core/network/failure.dart';
 import 'package:dooss_business_app/features/home/data/models/product_model.dart';
 import 'product_remote_data_source.dart';
 
@@ -9,95 +11,82 @@ class ProductRemoteDataSourceImp implements ProductRemoteDataSource {
   ProductRemoteDataSourceImp({required this.api});
 
   @override
-  Future<List<ProductModel>> fetchProducts() async {
-    try {
-      print('Fetching products from API...');
-      final response = await api.get(
-        apiRequest: ApiRequest(url: ApiUrls.products),
-      );
-      print('API response: $response');
-      return response.fold(
-        (failure) {
-          print('Failure: ${failure.message}');
-          // Return empty list if API fails, don't throw exception
-          return <ProductModel>[];
-        },
-        (data) {
-          print('Data received: $data');
-          if (data is List) {
-            return data.map((e) => ProductModel.fromJson(e)).toList();
-          } else {
-            print('Invalid data format received from API');
-            return <ProductModel>[];
-          }
-        },
-      );
-    } catch (e) {
-      print('ProductRemoteDataSource error: $e');
-      // Return empty list if any error occurs
-      return <ProductModel>[];
-    }
+  Future<Either<Failure, List<ProductModel>>> fetchProducts() async {
+    print('Fetching products from API...');
+    final response = await api.get(
+      apiRequest: ApiRequest(url: ApiUrls.products),
+    );
+    print('API response: $response');
+    
+    return response.fold(
+      (failure) {
+        print('Failure: ${failure.message}');
+        return Left(failure);
+      },
+      (data) {
+        print('Data received: $data');
+        if (data is List) {
+          final products = data.map((e) => ProductModel.fromJson(e)).toList();
+          return Right(products);
+        } else {
+          print('Invalid data format received from API');
+          return Left(Failure(message: 'Invalid data format received from API'));
+        }
+      },
+    );
   }
 
   @override
-  Future<List<ProductModel>> fetchProductsByCategory(String category) async {
-    try {
-      print('Fetching products by category from API...');
-      final response = await api.get(
-        apiRequest: ApiRequest(url: '${ApiUrls.products}?category=$category'),
-      );
-      print('API response: $response');
-      return response.fold(
-        (failure) {
-          print('Failure: ${failure.message}');
-          // Return empty list if API fails, don't throw exception
-          return <ProductModel>[];
-        },
-        (data) {
-          print('Data received: $data');
-          if (data is List) {
-            return data.map((e) => ProductModel.fromJson(e)).toList();
-          } else {
-            print('Invalid data format received from API');
-            return <ProductModel>[];
-          }
-        },
-      );
-    } catch (e) {
-      print('ProductRemoteDataSource error: $e');
-      // Return empty list if any error occurs
-      return <ProductModel>[];
-    }
+  Future<Either<Failure, List<ProductModel>>> fetchProductsByCategory(String category) async {
+    print('Fetching products by category from API...');
+    final response = await api.get(
+      apiRequest: ApiRequest(url: '${ApiUrls.products}?category=$category'),
+    );
+    print('API response: $response');
+    
+    return response.fold(
+      (failure) {
+        print('Failure: ${failure.message}');
+        return Left(failure);
+      },
+      (data) {
+        print('Data received: $data');
+        if (data is List) {
+          final products = data.map((e) => ProductModel.fromJson(e)).toList();
+          return Right(products);
+        } else {
+          print('Invalid data format received from API');
+          return Left(Failure(message: 'Invalid data format received from API'));
+        }
+      },
+    );
   }
 
   @override
-  Future<ProductModel> fetchProductDetails(int productId) async {
-    try {
-      print('Fetching product details from API...');
-      final url = '${ApiUrls.products}$productId/';
-      print('Constructed URL: $url');
-      final response = await api.get(
-        apiRequest: ApiRequest(url: url),
-      );
-      print('API response: $response');
-      return response.fold(
-        (failure) {
-          print('Failure: ${failure.message}');
-          throw Exception('Failed to load product details');
-        },
-        (data) {
-          print('Data received: $data');
-          return ProductModel.fromJson(data);
-        },
-      );
-    } catch (e) {
-      print('ProductRemoteDataSource fetchProductDetails error: $e');
-      throw Exception('Failed to load product details');
-    }
+  Future<Either<Failure, ProductModel>> fetchProductDetails(int productId) async {
+    print('Fetching product details from API...');
+    final url = '${ApiUrls.products}$productId/';
+    print('Constructed URL: $url');
+    final response = await api.get(
+      apiRequest: ApiRequest(url: url),
+    );
+    print('API response: $response');
+    
+    return response.fold(
+      (failure) {
+        print('Failure: ${failure.message}');
+        return Left(failure);
+      },
+      (data) {
+        print('Data received: $data');
+        final product = ProductModel.fromJson(data);
+        return Right(product);
+      },
+    );
   }
 
   @override
-  Future<List<ProductModel>> fetchRelatedProducts(int productId) async {
+  Future<Either<Failure, List<ProductModel>>> fetchRelatedProducts(int productId) async {
     try {
       print('Fetching related products from API...');
       final response = await api.get(
@@ -126,7 +115,7 @@ class ProductRemoteDataSourceImp implements ProductRemoteDataSource {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> fetchProductReviews(int productId) async {
+  Future<Either<Failure, List<Map<String, dynamic>>>> fetchProductReviews(int productId) async {
     try {
       print('Fetching product reviews from API...');
       final response = await api.get(

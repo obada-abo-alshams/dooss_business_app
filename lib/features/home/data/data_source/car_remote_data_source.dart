@@ -5,7 +5,7 @@ import '../../../../core/network/app_dio.dart';
 import '../models/car_model.dart';
 
 abstract class CarRemoteDataSource {
-  Future<List<CarModel>> fetchCars();
+  Future<Either<Failure, List<CarModel>>> fetchCars();
   Future<Either<Failure, CarModel>> fetchCarDetails(int carId);
   Future<Either<Failure, List<CarModel>>> fetchSimilarCars(int carId);
 }
@@ -16,7 +16,7 @@ class CarRemoteDataSourceImpl implements CarRemoteDataSource {
   CarRemoteDataSourceImpl(this._dio);
 
   @override
-  Future<List<CarModel>> fetchCars() async {
+  Future<Either<Failure, List<CarModel>>> fetchCars() async {
     try {
       print('Fetching cars from API...');
       final response = await _dio.dio.get(ApiUrls.cars);
@@ -27,14 +27,14 @@ class CarRemoteDataSourceImpl implements CarRemoteDataSource {
         final List<dynamic> carsData = response.data;
         final cars = carsData.map((json) => CarModel.fromJson(json)).toList();
         print('✅ Successfully fetched ${cars.length} cars');
-        return cars;
+        return Right(cars);
       } else {
         print('❌ Failed to fetch cars: ${response.statusCode}');
-        return [];
+        return Left(Failure(message: 'Failed to fetch cars: Status ${response.statusCode}'));
       }
     } catch (e) {
       print('❌ CarRemoteDataSource error: $e');
-      return [];
+      return Left(Failure(message: 'Network error: $e'));
     }
   }
 

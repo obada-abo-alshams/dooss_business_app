@@ -1,37 +1,42 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dooss_business_app/core/cubits/optimized_cubit.dart';
 import 'product_state.dart';
 import 'package:dooss_business_app/features/home/data/data_source/product_remote_data_source.dart';
 
 // Cubit
-class ProductCubit extends Cubit<ProductState> {
+class ProductCubit extends OptimizedCubit<ProductState> {
   final ProductRemoteDataSource dataSource;
   
   ProductCubit(this.dataSource) : super(const ProductState());
 
   void loadProducts() async {
-    emit(state.copyWith(isLoading: true, error: null));
-    try {
-      final allProducts = await dataSource.fetchProducts();
-      
-      // Take first 10 products for home screen
-      final homeProducts = allProducts.take(10).toList();
-      
-      emit(state.copyWith(
-        products: homeProducts,
-        allProducts: allProducts,
-        isLoading: false,
-      ));
-    } catch (e) {
-      print('ProductCubit error: $e');
-      emit(state.copyWith(error: 'Failed to load products', isLoading: false));
-    }
+    safeEmit(state.copyWith(isLoading: true, error: null));
+    
+    final result = await dataSource.fetchProducts();
+    
+    result.fold(
+      (failure) {
+        safeEmit(state.copyWith(
+          error: failure.message,
+          isLoading: false,
+        ));
+      },
+      (allProducts) {
+        final homeProducts = allProducts.take(10).toList();
+        
+        batchEmit((currentState) => currentState.copyWith(
+          products: homeProducts,
+          allProducts: allProducts,
+          isLoading: false,
+        ));
+      },
+    );
   }
 
   void loadAllProducts() async {
     // If we already have all products, use them
     if (state.allProducts.isNotEmpty) {
       final first8Products = state.allProducts.take(8).toList();
-      emit(state.copyWith(
+      emitOptimized(state.copyWith(
         filteredProducts: state.allProducts,
         displayedProducts: first8Products,
         selectedCategory: 'All',
@@ -41,34 +46,42 @@ class ProductCubit extends Cubit<ProductState> {
     }
 
     // Otherwise, fetch from API
-    emit(state.copyWith(isLoading: true, error: null));
-    try {
-      final allProducts = await dataSource.fetchProducts();
-      final first8Products = allProducts.take(8).toList();
-      emit(state.copyWith(
-        allProducts: allProducts,
-        filteredProducts: allProducts,
-        displayedProducts: first8Products,
-        selectedCategory: 'All',
-        hasMoreProducts: allProducts.length > 8,
-        isLoading: false,
-      ));
-    } catch (e) {
-      print('ProductCubit loadAllProducts error: $e');
-      emit(state.copyWith(error: 'Failed to load all products', isLoading: false));
-    }
+    safeEmit(state.copyWith(isLoading: true, error: null));
+    
+    final result = await dataSource.fetchProducts();
+    
+    result.fold(
+      (failure) {
+        safeEmit(state.copyWith(
+          error: failure.message,
+          isLoading: false,
+        ));
+      },
+      (allProducts) {
+        final first8Products = allProducts.take(8).toList();
+        
+        batchEmit((currentState) => currentState.copyWith(
+          allProducts: allProducts,
+          filteredProducts: allProducts,
+          displayedProducts: first8Products,
+          selectedCategory: 'All',
+          hasMoreProducts: allProducts.length > 8,
+          isLoading: false,
+        ));
+      },
+    );
   }
 
   void showHomeProducts() {
     // Show only first 10 products
     final homeProducts = state.allProducts.take(10).toList();
-    emit(state.copyWith(products: homeProducts));
+    emitOptimized(state.copyWith(products: homeProducts));
   }
 
   void filterByCategory(String category) {
     if (category == 'All') {
       final first8Products = state.allProducts.take(8).toList();
-      emit(state.copyWith(
+      emitOptimized(state.copyWith(
         filteredProducts: state.allProducts,
         displayedProducts: first8Products,
         selectedCategory: category,
@@ -83,7 +96,7 @@ class ProductCubit extends Cubit<ProductState> {
       }).toList();
       
       final first8Products = filteredProducts.take(8).toList();
-      emit(state.copyWith(
+      emitOptimized(state.copyWith(
         filteredProducts: filteredProducts,
         displayedProducts: first8Products,
         selectedCategory: category,
@@ -95,13 +108,13 @@ class ProductCubit extends Cubit<ProductState> {
   void loadMoreProducts() {
     if (state.isLoadingMore || !state.hasMoreProducts) return;
     
-    emit(state.copyWith(isLoadingMore: true));
+    safeEmit(state.copyWith(isLoadingMore: true));
     
     final currentDisplayedCount = state.displayedProducts.length;
     final next8Products = state.filteredProducts.skip(currentDisplayedCount).take(8).toList();
     final newDisplayedProducts = [...state.displayedProducts, ...next8Products];
     
-    emit(state.copyWith(
+    batchEmit((currentState) => currentState.copyWith(
       displayedProducts: newDisplayedProducts,
       hasMoreProducts: newDisplayedProducts.length < state.filteredProducts.length,
       isLoadingMore: false,
@@ -109,32 +122,76 @@ class ProductCubit extends Cubit<ProductState> {
   }
 
   void loadProductDetails(int productId) async {
-    emit(state.copyWith(isLoading: true, error: null));
-    try {
-      // Load product details from API
-      final product = await dataSource.fetchProductDetails(productId);
-      
-      // Load related products
-      final relatedProducts = await dataSource.fetchRelatedProducts(productId);
-      
-      // Load product reviews
-      final reviews = await dataSource.fetchProductReviews(productId);
-      
-      emit(state.copyWith(
-        selectedProduct: product,
-        relatedProducts: relatedProducts,
-        productReviews: reviews,
-        isLoading: false,
-      ));
-    } catch (e) {
-      print('ProductCubit loadProductDetails error: $e');
-      emit(state.copyWith(error: 'Failed to load product details', isLoading: false));
-    }
+    safeEmit(state.copyWith(isLoading: true, error: null));
+    
+    final productResult = await dataSource.fetchProductDetails(productId);
+    
+    productResult.fold(
+      (failure) {
+        safeEmit(state.copyWith(
+          error: failure.message,
+          isLoading: false,
+        ));
+      },
+      (product) async {
+        // Load related products and reviews in parallel
+        final relatedProductsResult = await dataSource.fetchRelatedProducts(productId);
+        final reviewsResult = await dataSource.fetchProductReviews(productId);
+        
+        relatedProductsResult.fold(
+          (relatedFailure) {
+            // If related products fail, still show product details but log the error
+            reviewsResult.fold(
+              (reviewFailure) {
+                // Both related and reviews failed
+                safeEmit(state.copyWith(
+                  selectedProduct: product,
+                  relatedProducts: [],
+                  productReviews: [],
+                  isLoading: false,
+                ));
+              },
+              (reviews) {
+                // Only related products failed
+                safeEmit(state.copyWith(
+                  selectedProduct: product,
+                  relatedProducts: [],
+                  productReviews: reviews,
+                  isLoading: false,
+                ));
+              },
+            );
+          },
+          (relatedProducts) {
+            reviewsResult.fold(
+              (reviewFailure) {
+                // Only reviews failed
+                safeEmit(state.copyWith(
+                  selectedProduct: product,
+                  relatedProducts: relatedProducts,
+                  productReviews: [],
+                  isLoading: false,
+                ));
+              },
+              (reviews) {
+                // Everything succeeded
+                batchEmit((currentState) => currentState.copyWith(
+                  selectedProduct: product,
+                  relatedProducts: relatedProducts,
+                  productReviews: reviews,
+                  isLoading: false,
+                ));
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   void toggleProductFavorite(int productId) {
     // Here you would typically update the favorite status in the backend
     // For now, we'll just emit the same state
-    emit(state.copyWith());
+    emitOptimized(state.copyWith());
   }
 }

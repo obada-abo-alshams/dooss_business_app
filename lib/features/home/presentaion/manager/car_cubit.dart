@@ -12,45 +12,53 @@ class CarCubit extends OptimizedCubit<CarState> {
     print('🚀 CarCubit - Starting to load cars');
     safeEmit(state.copyWith(isLoading: true, error: null));
     
-    try {
-      final allCars = await _carRemoteDataSource.fetchCars();
-      print('✅ CarCubit - Successfully fetched ${allCars.length} cars');
-      final homeCars = allCars.take(10).toList();
-      
-      batchEmit((currentState) => currentState.copyWith(
-        cars: homeCars,
-        allCars: allCars,
-        isLoading: false,
-      ));
-    } catch (e) {
-      print('❌ CarCubit - Failed to load cars: $e');
-      safeEmit(state.copyWith(
-        error: 'Failed to load cars',
-        isLoading: false,
-      ));
-    }
+    final result = await _carRemoteDataSource.fetchCars();
+    
+    result.fold(
+      (failure) {
+        print('❌ CarCubit - Failed to load cars: ${failure.message}');
+        safeEmit(state.copyWith(
+          error: failure.message,
+          isLoading: false,
+        ));
+      },
+      (allCars) {
+        print('✅ CarCubit - Successfully fetched ${allCars.length} cars');
+        final homeCars = allCars.take(10).toList();
+        
+        batchEmit((currentState) => currentState.copyWith(
+          cars: homeCars,
+          allCars: allCars,
+          isLoading: false,
+        ));
+      },
+    );
   }
 
   void loadAllCars() async {
     safeEmit(state.copyWith(isLoading: true, error: null, currentPage: 1));
     
-    try {
-      final allCars = await _carRemoteDataSource.fetchCars();
-      final firstPageCars = allCars.take(10).toList();
-      
-      batchEmit((currentState) => currentState.copyWith(
-        allCars: allCars,
-        cars: firstPageCars,
-        isLoading: false,
-        currentPage: 1,
-        hasMoreCars: allCars.length > 10,
-      ));
-    } catch (e) {
-      safeEmit(state.copyWith(
-        error: 'Failed to load all cars',
-        isLoading: false,
-      ));
-    }
+    final result = await _carRemoteDataSource.fetchCars();
+    
+    result.fold(
+      (failure) {
+        safeEmit(state.copyWith(
+          error: failure.message,
+          isLoading: false,
+        ));
+      },
+      (allCars) {
+        final firstPageCars = allCars.take(10).toList();
+        
+        batchEmit((currentState) => currentState.copyWith(
+          allCars: allCars,
+          cars: firstPageCars,
+          isLoading: false,
+          currentPage: 1,
+          hasMoreCars: allCars.length > 10,
+        ));
+      },
+    );
   }
 
   void loadMoreCars() async {
@@ -58,30 +66,23 @@ class CarCubit extends OptimizedCubit<CarState> {
     
     safeEmit(state.copyWith(isLoadingMore: true));
     
-    try {
-      final nextPage = state.currentPage + 1;
-      final startIndex = (nextPage - 1) * 10;
-      final endIndex = startIndex + 10;
+    final nextPage = state.currentPage + 1;
+    final startIndex = (nextPage - 1) * 10;
+    final endIndex = startIndex + 10;
+    
+    if (startIndex < state.allCars.length) {
+      final newCars = state.allCars.skip(startIndex).take(10).toList();
+      final updatedCars = [...state.cars, ...newCars];
       
-      if (startIndex < state.allCars.length) {
-        final newCars = state.allCars.skip(startIndex).take(10).toList();
-        final updatedCars = [...state.cars, ...newCars];
-        
-        batchEmit((currentState) => currentState.copyWith(
-          cars: updatedCars,
-          currentPage: nextPage,
-          hasMoreCars: endIndex < state.allCars.length,
-          isLoadingMore: false,
-        ));
-      } else {
-        safeEmit(state.copyWith(
-          hasMoreCars: false,
-          isLoadingMore: false,
-        ));
-      }
-    } catch (e) {
+      batchEmit((currentState) => currentState.copyWith(
+        cars: updatedCars,
+        currentPage: nextPage,
+        hasMoreCars: endIndex < state.allCars.length,
+        isLoadingMore: false,
+      ));
+    } else {
       safeEmit(state.copyWith(
-        error: 'Failed to load more cars',
+        hasMoreCars: false,
         isLoadingMore: false,
       ));
     }
