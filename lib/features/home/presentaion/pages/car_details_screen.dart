@@ -431,6 +431,7 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
                                   zoomControlsEnabled: false,
                                   mapToolbarEnabled: false,
                                   compassEnabled: true,
+                                  liteModeEnabled: true,
                                   onMapCreated: (GoogleMapController controller) {
                                     print('🗺️ CarDetails: Map controller created');
                                   },

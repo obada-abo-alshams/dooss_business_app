@@ -6,6 +6,7 @@ class HomeBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final devicePixelWidth = (MediaQuery.of(context).size.width * MediaQuery.of(context).devicePixelRatio).round();
     return Container(
       height: 180.h,
       width: double.infinity,
@@ -19,6 +20,7 @@ class HomeBanner extends StatelessWidget {
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
+          cacheWidth: devicePixelWidth,
         ),
       ),
     );

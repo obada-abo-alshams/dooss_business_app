@@ -10,13 +10,15 @@ class OnBoardingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final devicePixelWidth = (MediaQuery.of(context).size.width * MediaQuery.of(context).devicePixelRatio).round();
+    final backgroundImage = ResizeImage(const AssetImage('assets/images/on_boarding.jpg'), width: devicePixelWidth);
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/on_boarding.jpg'),
+            image: backgroundImage,
             fit: BoxFit.cover,
           ),
         ),

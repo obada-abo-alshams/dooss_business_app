@@ -27,6 +27,7 @@ import 'package:dooss_business_app/features/home/presentaion/manager/service_cub
 import 'package:dooss_business_app/features/home/data/models/service_model.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/foundation.dart';
 import '../../features/auth/presentation/pages/app_type_screen.dart';
 import '../../features/auth/presentation/pages/on_boarding_screen.dart';
 import '../../features/cars/presentation/pages/add_car_step2.dart';
@@ -254,10 +255,10 @@ class AppRouter {
          builder: (context, state) {
            // Get service from extra parameter
            final service = state.extra as ServiceModel?;
-           print('🔍 AppRouter: Service Details route accessed');
-           print('🔍 AppRouter: Service extra parameter: ${service?.name ?? 'null'}');
+           if (kDebugMode) print('🔍 AppRouter: Service Details route accessed');
+           if (kDebugMode) print('🔍 AppRouter: Service extra parameter: ${service?.name ?? 'null'}');
            if (service != null) {
-             print('✅ AppRouter: Creating ServiceDetailsScreen with service: ${service.name}');
+             if (kDebugMode) print('✅ AppRouter: Creating ServiceDetailsScreen with service: ${service.name}');
              return ServiceDetailsScreen(service: service);
            }
            // Fallback: create a placeholder service

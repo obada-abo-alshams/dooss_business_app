@@ -474,6 +474,7 @@ class _ServiceDetailsScreenState extends State<ServiceDetailsScreen> {
                         zoomControlsEnabled: false,
                         mapToolbarEnabled: false,
                         compassEnabled: true,
+                        liteModeEnabled: true,
                         onMapCreated: (GoogleMapController controller) {
                           print('🗺️ ServiceDetails: Map controller created');
                         },

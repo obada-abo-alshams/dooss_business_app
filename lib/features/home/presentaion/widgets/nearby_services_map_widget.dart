@@ -127,6 +127,7 @@ class _NearbyServicesMapWidgetState extends State<NearbyServicesMapWidget> {
                 zoomControlsEnabled: false,
                 mapToolbarEnabled: false,
                 compassEnabled: false,
+                liteModeEnabled: true,
               ),
       ),
     );

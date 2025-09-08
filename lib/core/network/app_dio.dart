@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:flutter/foundation.dart';
 import '../services/token_service.dart';
 import '../services/auth_service.dart';
 import '../services/navigation_service.dart';
@@ -40,7 +41,7 @@ class AppDio {
         error: true,
         compact: true,
         maxWidth: 90,
-        enabled: true,
+        enabled: kDebugMode,
         filter: (options, args) {
           // don't print requests with uris containing '/posts'
           if (options.path.contains('/posts')) {
@@ -79,17 +80,17 @@ class AppDio {
             
             
             final token = await TokenService.getToken();
-            print('🔍 Token Interceptor - Token: $token');
-            print('🔍 Token Interceptor - Is token valid: $isTokenValid');
+            if (kDebugMode) print('🔍 Token Interceptor - Token: $token');
+            if (kDebugMode) print('🔍 Token Interceptor - Is token valid: $isTokenValid');
             
             if (token != null && token.isNotEmpty && isTokenValid) {
               options.headers['Authorization'] = 'Bearer $token';
-              print('🔍 Token Interceptor - Added token to headers');
+              if (kDebugMode) print('🔍 Token Interceptor - Added token to headers');
             } else {
-              print('⚠️ Token Interceptor - No valid token found');
+              if (kDebugMode) print('⚠️ Token Interceptor - No valid token found');
             }
           } else {
-            print('🔍 Token Interceptor - Auth endpoint, skipping token');
+            if (kDebugMode) print('🔍 Token Interceptor - Auth endpoint, skipping token');
           }
           handler.next(options);
         },
@@ -98,12 +99,12 @@ class AppDio {
           if (error.type == DioExceptionType.connectionTimeout ||
               error.type == DioExceptionType.receiveTimeout ||
               error.type == DioExceptionType.sendTimeout) {
-            print('⏰ Connection timeout error: ${error.message}');
-            print('🔄 Request details: ${error.requestOptions.uri}');
+            if (kDebugMode) print('⏰ Connection timeout error: ${error.message}');
+            if (kDebugMode) print('🔄 Request details: ${error.requestOptions.uri}');
             
             // إعادة محاولة للـ timeout errors (مرة واحدة فقط)
             if (error.requestOptions.extra['retry'] != true) {
-              print('🔄 Retrying request due to timeout...');
+              if (kDebugMode) print('🔄 Retrying request due to timeout...');
               error.requestOptions.extra['retry'] = true;
               
               try {
@@ -111,21 +112,21 @@ class AppDio {
                 handler.resolve(response);
                 return;
               } catch (retryError) {
-                print('❌ Retry failed: $retryError');
+                if (kDebugMode) print('❌ Retry failed: $retryError');
                 // الاستمرار مع الـ error الأصلي
               }
             }
           }
           
           if (error.response?.statusCode == 401) {
-            print('🚨 Token expired - attempting to refresh...');
-            print('🚨 Error details: ${error.response?.data}');
+            if (kDebugMode) print('🚨 Token expired - attempting to refresh...');
+            if (kDebugMode) print('🚨 Error details: ${error.response?.data}');
             
             // محاولة تجديد الـ token
             final refreshSuccess = await AuthService.refreshToken();
             
             if (refreshSuccess) {
-              print('✅ Token refreshed successfully, retrying request...');
+              if (kDebugMode) print('✅ Token refreshed successfully, retrying request...');
               
               // إعادة إرسال الـ request مع الـ token الجديد
               final newToken = await TokenService.getToken();
@@ -138,14 +139,14 @@ class AppDio {
                   handler.resolve(response);
                   return;
                 } catch (retryError) {
-                  print('❌ Retry request failed: $retryError');
+                  if (kDebugMode) print('❌ Retry request failed: $retryError');
                   handler.next(error);
                   return;
                 }
               }
             } else {
-              print('❌ Token refresh failed, clearing auth data');
-              print('🔄 User will be redirected to login screen');
+              if (kDebugMode) print('❌ Token refresh failed, clearing auth data');
+              if (kDebugMode) print('🔄 User will be redirected to login screen');
               await TokenService.clearToken();
               
               // الانتقال التلقائي لشاشة تسجيل الدخول
