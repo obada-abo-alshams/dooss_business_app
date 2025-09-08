@@ -407,6 +407,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               zoomControlsEnabled: false,
                               mapToolbarEnabled: false,
                               compassEnabled: true,
+                              liteModeEnabled: true,
                               onMapCreated: (GoogleMapController controller) {
                                 print('🗺️ ProductDetails: Map controller created');
                               },

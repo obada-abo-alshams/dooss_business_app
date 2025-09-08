@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:video_player/video_player.dart';
 
 class NativeVideoService {
@@ -9,27 +10,27 @@ class NativeVideoService {
       _controller?.dispose();
       _controller = VideoPlayerController.networkUrl(Uri.parse(url));
       await _controller!.initialize();
-      print('🎬 NativeVideoService: Video loaded: $url');
+      if (kDebugMode) print('🎬 NativeVideoService: Video loaded: $url');
     } catch (e) {
-      print('❌ NativeVideoService: Error loading video: $e');
+      if (kDebugMode) print('❌ NativeVideoService: Error loading video: $e');
     }
   }
   
   static Future<void> play() async {
     try {
       await _controller?.play();
-      print('▶️ NativeVideoService: Video playing');
+      if (kDebugMode) print('▶️ NativeVideoService: Video playing');
     } catch (e) {
-      print('❌ NativeVideoService: Error playing video: $e');
+      if (kDebugMode) print('❌ NativeVideoService: Error playing video: $e');
     }
   }
   
   static Future<void> pause() async {
     try {
       await _controller?.pause();
-      print('⏸️ NativeVideoService: Video paused');
+      if (kDebugMode) print('⏸️ NativeVideoService: Video paused');
     } catch (e) {
-      print('❌ NativeVideoService: Error pausing video: $e');
+      if (kDebugMode) print('❌ NativeVideoService: Error pausing video: $e');
     }
   }
   
@@ -37,9 +38,9 @@ class NativeVideoService {
     try {
       await _controller?.pause();
       await _controller?.seekTo(Duration.zero);
-      print('⏹️ NativeVideoService: Video stopped');
+      if (kDebugMode) print('⏹️ NativeVideoService: Video stopped');
     } catch (e) {
-      print('❌ NativeVideoService: Error stopping video: $e');
+      if (kDebugMode) print('❌ NativeVideoService: Error stopping video: $e');
     }
   }
   
@@ -47,9 +48,9 @@ class NativeVideoService {
     try {
       await _controller?.dispose();
       _controller = null;
-      print('🗑️ NativeVideoService: Video disposed');
+      if (kDebugMode) print('🗑️ NativeVideoService: Video disposed');
     } catch (e) {
-      print('❌ NativeVideoService: Error disposing video: $e');
+      if (kDebugMode) print('❌ NativeVideoService: Error disposing video: $e');
     }
   }
   
@@ -102,7 +103,7 @@ class _NativeVideoWidgetState extends State<NativeVideoWidget> {
   void didUpdateWidget(NativeVideoWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.videoUrl != widget.videoUrl) {
-      print('🔄 NativeVideoWidget: Video URL changed from ${oldWidget.videoUrl} to ${widget.videoUrl}');
+      if (kDebugMode) print('🔄 NativeVideoWidget: Video URL changed from ${oldWidget.videoUrl} to ${widget.videoUrl}');
       _disposeController();
       _initializeVideo();
     }
@@ -137,7 +138,7 @@ class _NativeVideoWidgetState extends State<NativeVideoWidget> {
           if (widget.loop) {
             _controller!.seekTo(Duration.zero);
             _controller!.play();
-            print('🔄 NativeVideoWidget: Video looped');
+            if (kDebugMode) print('🔄 NativeVideoWidget: Video looped');
           }
         }
       });
@@ -153,7 +154,7 @@ class _NativeVideoWidgetState extends State<NativeVideoWidget> {
       });
       
     } catch (e) {
-      print('❌ NativeVideoWidget: Error initializing video: $e');
+      if (kDebugMode) print('❌ NativeVideoWidget: Error initializing video: $e');
       widget.onVideoError?.call();
     }
   }
