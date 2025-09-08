@@ -2,11 +2,10 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/network/failure.dart';
 import '../../../../core/network/api_urls.dart';
 import '../../../../core/network/app_dio.dart';
-import '../../../../core/utils/app_logger.dart';
 import '../models/car_model.dart';
 
 abstract class CarRemoteDataSource {
-  Future<Either<Failure, List<CarModel>>> fetchCars();
+  Future<List<CarModel>> fetchCars();
   Future<Either<Failure, CarModel>> fetchCarDetails(int carId);
   Future<Either<Failure, List<CarModel>>> fetchSimilarCars(int carId);
 }
@@ -17,25 +16,25 @@ class CarRemoteDataSourceImpl implements CarRemoteDataSource {
   CarRemoteDataSourceImpl(this._dio);
 
   @override
-  Future<Either<Failure, List<CarModel>>> fetchCars() async {
+  Future<List<CarModel>> fetchCars() async {
     try {
-      AppLogger.info('Fetching cars from API...', 'CarDataSource');
+      print('Fetching cars from API...');
       final response = await _dio.dio.get(ApiUrls.cars);
       
-      AppLogger.network('GET', ApiUrls.cars, response.statusCode);
+      print('Cars response: $response');
       
       if (response.statusCode == 200) {
         final List<dynamic> carsData = response.data;
         final cars = carsData.map((json) => CarModel.fromJson(json)).toList();
-        AppLogger.success('Successfully fetched ${cars.length} cars', 'CarDataSource');
-        return Right(cars);
+        print('✅ Successfully fetched ${cars.length} cars');
+        return cars;
       } else {
-        AppLogger.error('Failed to fetch cars: ${response.statusCode}', 'CarDataSource');
-        return Left(Failure(message: 'Failed to fetch cars: ${response.statusCode}'));
+        print('❌ Failed to fetch cars: ${response.statusCode}');
+        return [];
       }
     } catch (e) {
-      AppLogger.error('CarRemoteDataSource error', 'CarDataSource', e);
-      return Left(Failure(message: 'Failed to fetch cars: $e'));
+      print('❌ CarRemoteDataSource error: $e');
+      return [];
     }
   }
 
