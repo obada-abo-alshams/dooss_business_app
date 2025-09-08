@@ -1,10 +1,9 @@
-import 'package:equatable/equatable.dart';
 import '../../data/models/dealer_model.dart';
 import '../../data/models/reel_model.dart';
 import '../../data/models/service_model.dart';
 import '../../../home/data/models/car_model.dart';
 
-class DealerProfileState extends Equatable {
+class DealerProfileState {
   final DealerModel? dealer;
   final List<ReelModel> reels;
   final List<CarModel> cars;
@@ -52,15 +51,32 @@ class DealerProfileState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-        dealer,
-        reels,
-        cars,
-        services,
-        isLoading,
-        isLoadingReels,
-        isLoadingCars,
-        isLoadingServices,
-        error,
-      ];
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is DealerProfileState &&
+        other.dealer == dealer &&
+        other.reels == reels &&
+        other.cars == cars &&
+        other.services == services &&
+        other.isLoading == isLoading &&
+        other.isLoadingReels == isLoadingReels &&
+        other.isLoadingCars == isLoadingCars &&
+        other.isLoadingServices == isLoadingServices &&
+        other.error == error;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(
+      dealer,
+      Object.hashAll(reels),
+      Object.hashAll(cars),
+      Object.hashAll(services),
+      isLoading,
+      isLoadingReels,
+      isLoadingCars,
+      isLoadingServices,
+      error,
+    );
+  }
 }

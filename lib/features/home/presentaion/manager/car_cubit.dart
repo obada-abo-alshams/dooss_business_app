@@ -1,4 +1,5 @@
 import 'package:dooss_business_app/core/cubits/optimized_cubit.dart';
+import 'package:dooss_business_app/core/utils/app_logger.dart';
 import '../../data/data_source/car_remote_data_source.dart';
 import '../../data/models/car_model.dart';
 import 'car_state.dart';
@@ -9,48 +10,56 @@ class CarCubit extends OptimizedCubit<CarState> {
   CarCubit(this._carRemoteDataSource) : super(const CarState());
 
   void loadCars() async {
-    print('🚀 CarCubit - Starting to load cars');
+    AppLogger.info('Starting to load cars', 'CarCubit');
     safeEmit(state.copyWith(isLoading: true, error: null));
     
-    try {
-      final allCars = await _carRemoteDataSource.fetchCars();
-      print('✅ CarCubit - Successfully fetched ${allCars.length} cars');
-      final homeCars = allCars.take(10).toList();
-      
-      batchEmit((currentState) => currentState.copyWith(
-        cars: homeCars,
-        allCars: allCars,
-        isLoading: false,
-      ));
-    } catch (e) {
-      print('❌ CarCubit - Failed to load cars: $e');
-      safeEmit(state.copyWith(
-        error: 'Failed to load cars',
-        isLoading: false,
-      ));
-    }
+    final result = await _carRemoteDataSource.fetchCars();
+    
+    result.fold(
+      (failure) {
+        AppLogger.error('Failed to load cars: ${failure.message}', 'CarCubit');
+        safeEmit(state.copyWith(
+          error: failure.message,
+          isLoading: false,
+        ));
+      },
+      (allCars) {
+        AppLogger.success('Successfully fetched ${allCars.length} cars', 'CarCubit');
+        final homeCars = allCars.take(10).toList();
+        
+        batchEmit((currentState) => currentState.copyWith(
+          cars: homeCars,
+          allCars: allCars,
+          isLoading: false,
+        ));
+      },
+    );
   }
 
   void loadAllCars() async {
     safeEmit(state.copyWith(isLoading: true, error: null, currentPage: 1));
     
-    try {
-      final allCars = await _carRemoteDataSource.fetchCars();
-      final firstPageCars = allCars.take(10).toList();
-      
-      batchEmit((currentState) => currentState.copyWith(
-        allCars: allCars,
-        cars: firstPageCars,
-        isLoading: false,
-        currentPage: 1,
-        hasMoreCars: allCars.length > 10,
-      ));
-    } catch (e) {
-      safeEmit(state.copyWith(
-        error: 'Failed to load all cars',
-        isLoading: false,
-      ));
-    }
+    final result = await _carRemoteDataSource.fetchCars();
+    
+    result.fold(
+      (failure) {
+        safeEmit(state.copyWith(
+          error: failure.message,
+          isLoading: false,
+        ));
+      },
+      (allCars) {
+        final firstPageCars = allCars.take(10).toList();
+        
+        batchEmit((currentState) => currentState.copyWith(
+          allCars: allCars,
+          cars: firstPageCars,
+          isLoading: false,
+          currentPage: 1,
+          hasMoreCars: allCars.length > 10,
+        ));
+      },
+    );
   }
 
   void loadMoreCars() async {

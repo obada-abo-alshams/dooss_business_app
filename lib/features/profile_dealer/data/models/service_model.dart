@@ -1,6 +1,4 @@
-import 'package:equatable/equatable.dart';
-
-class ServiceModel extends Equatable {
+class ServiceModel {
   final String id;
   final String name;
   final String description;
@@ -68,19 +66,40 @@ class ServiceModel extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-        id,
-        name,
-        description,
-        location,
-        status,
-        closingTime,
-        rating,
-        category,
-        categoryColor,
-        iconColor,
-        dealerId,
-        phoneNumber,
-        whatsappNumber,
-      ];
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ServiceModel &&
+        other.id == id &&
+        other.name == name &&
+        other.description == description &&
+        other.location == location &&
+        other.status == status &&
+        other.closingTime == closingTime &&
+        other.rating == rating &&
+        other.category == category &&
+        other.categoryColor == categoryColor &&
+        other.iconColor == iconColor &&
+        other.dealerId == dealerId &&
+        other.phoneNumber == phoneNumber &&
+        other.whatsappNumber == whatsappNumber;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(
+      id,
+      name,
+      description,
+      location,
+      status,
+      closingTime,
+      rating,
+      category,
+      categoryColor,
+      iconColor,
+      dealerId,
+      phoneNumber,
+      whatsappNumber,
+    );
+  }
 }

@@ -18,19 +18,6 @@ class MarketReelsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ReelCubit, ReelState>(
       builder: (context, state) {
-        return const MarketReelsSectionContent();
-      },
-    );
-  }
-}
-
-class MarketReelsSectionContent extends StatelessWidget {
-  const MarketReelsSectionContent({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<ReelCubit, ReelState>(
-      builder: (context, state) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/text_styles.dart';
+import '../../../../core/utils/app_logger.dart';
 
 class ChatInputField extends StatefulWidget {
   final TextEditingController controller;
@@ -57,8 +58,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
             // Attachment Button
             IconButton(
               onPressed: () {
-                
-                print('Attachment');
+                AppLogger.info('Attachment button pressed', 'ChatInputField');
               },
               icon: Icon(
                 Icons.attach_file,
@@ -107,8 +107,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
             // Voice Button
             IconButton(
               onPressed: () {
-                
-                print('Voice message');
+                AppLogger.info('Voice message button pressed', 'ChatInputField');
               },
               icon: Icon(
                 Icons.mic,
