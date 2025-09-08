@@ -28,7 +28,7 @@ class HomeTabScrollContent extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       child: Column(
         children: [
-          HomeTabBannerSection(),
+          const HomeTabBannerSection(),
           const MarketReelsSection(),
           SizedBox(height: 24.h),
           const BrowseByTypeSectionWrapper(),
