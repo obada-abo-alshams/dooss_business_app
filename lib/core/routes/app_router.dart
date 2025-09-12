@@ -10,6 +10,7 @@ import 'package:dooss_business_app/features/chat/data/models/chat_model.dart';
 import 'package:dooss_business_app/features/home/presentaion/pages/home_screen.dart';
 import 'package:dooss_business_app/features/chat/presentation/pages/chat_list_screen.dart';
 import 'package:dooss_business_app/features/chat/presentation/pages/chat_detail_screen.dart';
+import 'package:dooss_business_app/features/chat/presentation/pages/archived_chats_screen.dart';
 import 'package:dooss_business_app/features/cars/presentation/pages/cars_screen.dart';
 import 'package:dooss_business_app/features/home/presentaion/pages/all_cars_screen.dart';
 import 'package:dooss_business_app/features/home/presentaion/pages/all_products_screen.dart';
@@ -148,6 +149,13 @@ class AppRouter {
         GoRoute(
           path: RouteNames.chatsListScreen,
           builder: (context, state) => const ChatsListScreen(),
+        ),
+        GoRoute(
+          path: RouteNames.archivedChatsScreen,
+          builder: (context, state) => BlocProvider(
+            create: (_) => di.sl<ChatCubit>(),
+            child: const ArchivedChatsScreen(),
+          ),
         ),
         GoRoute(
           path: '${RouteNames.chatConversationScreen}/:id',

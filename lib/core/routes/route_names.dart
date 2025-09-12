@@ -16,6 +16,7 @@ class RouteNames {
   static const String allProductsScreen = '/allProducts';
   static const String productDetailsScreen = '/product-details';
   static const String chatsListScreen = '/chats';
+  static const String archivedChatsScreen = '/archived-chats';
   static const String chatConversationScreen = '/chat';
   static const String addCarFlow = '/addCarFlow';
   static const String addCarStep1 = '/addCarStep1';

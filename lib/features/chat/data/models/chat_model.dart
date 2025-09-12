@@ -8,6 +8,7 @@ class ChatModel {
   final String? lastMessageAt;
   final int userUnreadCount;
   final int dealerUnreadCount;
+  final bool isArchived;
 
   ChatModel({
     required this.id,
@@ -19,6 +20,7 @@ class ChatModel {
     this.lastMessageAt,
     this.userUnreadCount = 0,
     this.dealerUnreadCount = 0,
+    this.isArchived = false,
   });
 
   factory ChatModel.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,7 @@ class ChatModel {
       lastMessageAt: json['last_message_at'],
       userUnreadCount: json['user_unread_count'] ?? 0,
       dealerUnreadCount: json['dealer_unread_count'] ?? 0,
+      isArchived: json['is_archived'] ?? false,
     );
   }
 
@@ -48,6 +51,7 @@ class ChatModel {
       'last_message_at': lastMessageAt,
       'user_unread_count': userUnreadCount,
       'dealer_unread_count': dealerUnreadCount,
+      'is_archived': isArchived,
     };
   }
 
@@ -61,6 +65,7 @@ class ChatModel {
     String? lastMessageAt,
     int? userUnreadCount,
     int? dealerUnreadCount,
+    bool? isArchived,
   }) {
     return ChatModel(
       id: id ?? this.id,
@@ -72,6 +77,7 @@ class ChatModel {
       lastMessageAt: lastMessageAt ?? this.lastMessageAt,
       userUnreadCount: userUnreadCount ?? this.userUnreadCount,
       dealerUnreadCount: dealerUnreadCount ?? this.dealerUnreadCount,
+      isArchived: isArchived ?? this.isArchived,
     );
   }
 }

@@ -44,14 +44,34 @@ class ChatCubit extends OptimizedCubit<ChatState> {
       print('ChatCubit - Calling dataSource.fetchChats()');
       final chats = await dataSource.fetchChats();
       print('ChatCubit - Received ${chats.length} chats from dataSource');
+      // Filter out archived chats from regular chats list
+      final activeChats = chats.where((chat) => !chat.isArchived).toList();
       safeEmit(state.copyWith(
-        chats: chats,
+        chats: activeChats,
         isLoading: false,
       ));
-      print('ChatCubit - State updated with ${state.chats.length} chats');
+      print('ChatCubit - State updated with ${state.chats.length} active chats');
     } catch (e) {
       print('ChatCubit error: $e');
       safeEmit(state.copyWith(error: 'Failed to load chats', isLoading: false));
+    }
+  }
+
+  void loadArchivedChats() async {
+    print('ChatCubit - loadArchivedChats() called');
+    safeEmit(state.copyWith(isLoadingArchivedChats: true, error: null));
+    try {
+      print('ChatCubit - Calling dataSource.fetchArchivedChats()');
+      final archivedChats = await dataSource.fetchArchivedChats();
+      print('ChatCubit - Received ${archivedChats.length} archived chats from dataSource');
+      safeEmit(state.copyWith(
+        archivedChats: archivedChats,
+        isLoadingArchivedChats: false,
+      ));
+      print('ChatCubit - State updated with ${state.archivedChats.length} archived chats');
+    } catch (e) {
+      print('ChatCubit loadArchivedChats error: $e');
+      safeEmit(state.copyWith(error: 'Failed to load archived chats', isLoadingArchivedChats: false));
     }
   }
 
@@ -162,6 +182,48 @@ class ChatCubit extends OptimizedCubit<ChatState> {
       messages: [],
       isLoadingMessages: false,
     ));
+  }
+
+  void archiveChat(int chatId) async {
+    print('ChatCubit - archiveChat() called with chatId: $chatId');
+    try {
+      final archivedChat = await dataSource.archiveChat(chatId);
+      print('ChatCubit - Chat archived successfully: ${archivedChat.dealer}');
+      
+      // Remove from active chats and add to archived chats
+      final updatedChats = state.chats.where((chat) => chat.id != chatId).toList();
+      final updatedArchivedChats = [...state.archivedChats, archivedChat];
+      
+      safeEmit(state.copyWith(
+        chats: updatedChats,
+        archivedChats: updatedArchivedChats,
+      ));
+      print('ChatCubit - Chat moved to archived successfully');
+    } catch (e) {
+      print('ChatCubit archiveChat error: $e');
+      safeEmit(state.copyWith(error: 'Failed to archive chat: $e'));
+    }
+  }
+
+  void unarchiveChat(int chatId) async {
+    print('ChatCubit - unarchiveChat() called with chatId: $chatId');
+    try {
+      final unarchivedChat = await dataSource.unarchiveChat(chatId);
+      print('ChatCubit - Chat unarchived successfully: ${unarchivedChat.dealer}');
+      
+      // Remove from archived chats and add to active chats
+      final updatedArchivedChats = state.archivedChats.where((chat) => chat.id != chatId).toList();
+      final updatedChats = [...state.chats, unarchivedChat];
+      
+      safeEmit(state.copyWith(
+        chats: updatedChats,
+        archivedChats: updatedArchivedChats,
+      ));
+      print('ChatCubit - Chat restored to active conversations successfully');
+    } catch (e) {
+      print('ChatCubit unarchiveChat error: $e');
+      safeEmit(state.copyWith(error: 'Failed to unarchive chat: $e'));
+    }
   }
 
   @override
