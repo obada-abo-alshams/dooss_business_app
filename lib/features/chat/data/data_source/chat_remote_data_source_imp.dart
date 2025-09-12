@@ -126,4 +126,87 @@ class ChatRemoteDataSourceImp implements ChatRemoteDataSource {
       throw Exception('Failed to send message');
     }
   }
+
+  @override
+  Future<List<ChatModel>> fetchArchivedChats() async {
+    try {
+      print('Fetching archived chats from API...');
+      final response = await api.get(
+        apiRequest: ApiRequest(url: '${ApiUrls.chats}archived/'),
+      );
+      print('API response: $response');
+      return response.fold(
+        (failure) {
+          print('Failure: ${failure.message}');
+          return <ChatModel>[];
+        },
+        (data) {
+          print('Data received: $data');
+          if (data is List) {
+            return data.map((e) => ChatModel.fromJson(e)).toList();
+          } else {
+            print('Invalid data format received from API');
+            return <ChatModel>[];
+          }
+        },
+      );
+    } catch (e) {
+      print('ChatRemoteDataSource fetchArchivedChats error: $e');
+      return <ChatModel>[];
+    }
+  }
+
+  @override
+  Future<ChatModel> archiveChat(int chatId) async {
+    try {
+      print('Archiving chat with ID: $chatId');
+      final response = await api.patch(
+        apiRequest: ApiRequest(
+          url: '${ApiUrls.chats}$chatId/archive/',
+          data: {'is_archived': true},
+        ),
+      );
+      print('API response: $response');
+      return response.fold(
+        (failure) {
+          print('Failure: ${failure.message}');
+          throw Exception('Failed to archive chat: ${failure.message}');
+        },
+        (data) {
+          print('Chat archived successfully: $data');
+          return ChatModel.fromJson(data);
+        },
+      );
+    } catch (e) {
+      print('ChatRemoteDataSource archiveChat error: $e');
+      throw Exception('Failed to archive chat: $e');
+    }
+  }
+
+  @override
+  Future<ChatModel> unarchiveChat(int chatId) async {
+    try {
+      print('Unarchiving chat with ID: $chatId');
+      final response = await api.patch(
+        apiRequest: ApiRequest(
+          url: '${ApiUrls.chats}$chatId/unarchive/',
+          data: {'is_archived': false},
+        ),
+      );
+      print('API response: $response');
+      return response.fold(
+        (failure) {
+          print('Failure: ${failure.message}');
+          throw Exception('Failed to unarchive chat: ${failure.message}');
+        },
+        (data) {
+          print('Chat unarchived successfully: $data');
+          return ChatModel.fromJson(data);
+        },
+      );
+    } catch (e) {
+      print('ChatRemoteDataSource unarchiveChat error: $e');
+      throw Exception('Failed to unarchive chat: $e');
+    }
+  }
 }

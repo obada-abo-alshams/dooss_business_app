@@ -7,17 +7,20 @@ import '../../data/models/chat_model.dart';
 class ChatListItem extends StatelessWidget {
   final ChatModel chat;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   const ChatListItem({
     super.key,
     required this.chat,
     required this.onTap,
+    this.onLongPress,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
         margin: EdgeInsets.only(bottom: 1.h),

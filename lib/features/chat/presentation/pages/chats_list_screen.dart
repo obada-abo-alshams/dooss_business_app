@@ -126,19 +126,131 @@ class _ChatsListScreenState extends State<ChatsListScreen> {
         }
 
         print('ChatsListScreen - Showing ${state.chats.length} chats');
-        return ListView.builder(
-          itemCount: state.chats.length,
-          itemBuilder: (context, index) {
-            final chat = state.chats[index];
-            print('ChatsListScreen - Building chat item: ${chat.dealer}');
-            return ChatListItem(
-              chat: chat,
-              onTap: () {
-                print('ChatsListScreen - Tapped on chat: ${chat.dealer}');
-                context.go('/chat/${chat.id}');
+        return Column(
+          children: [
+            // Archive button
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  context.go('/archived-chats');
+                },
+                icon: const Icon(Icons.archive_outlined),
+                label: Text(
+                  'Archived Chats (${state.archivedChats.length})',
+                  style: AppTextStyles.s14w500,
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.gray,
+                  side: BorderSide(color: AppColors.gray.withOpacity(0.3)),
+                  padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                ),
+              ),
+            ),
+            // Info banner
+            if (state.chats.isNotEmpty)
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(12.w),
+                margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8.r),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.blue.shade600,
+                      size: 16.sp,
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        'Long press any chat to archive it',
+                        style: AppTextStyles.s12w400.copyWith(
+                          color: Colors.blue.shade700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            // Chats list
+            Expanded(
+              child: ListView.builder(
+                itemCount: state.chats.length,
+                itemBuilder: (context, index) {
+                  final chat = state.chats[index];
+                  print('ChatsListScreen - Building chat item: ${chat.dealer}');
+                  return ChatListItem(
+                    chat: chat,
+                    onTap: () {
+                      print('ChatsListScreen - Tapped on chat: ${chat.dealer}');
+                      context.go('/chat/${chat.id}');
+                    },
+                    onLongPress: () {
+                      _showArchiveDialog(context, chat.id, chat.dealer);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showArchiveDialog(BuildContext context, int chatId, String dealerName) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(
+            'Archive Conversation',
+            style: AppTextStyles.s18w600,
+          ),
+          content: Text(
+            'Do you want to archive the conversation with $dealerName? You can restore it later from archived chats.',
+            style: AppTextStyles.s14w400,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
               },
-            );
-          },
+              child: Text(
+                'Cancel',
+                style: AppTextStyles.s14w500.copyWith(color: AppColors.gray),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                context.read<ChatCubit>().archiveChat(chatId);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Conversation with $dealerName archived successfully'),
+                    backgroundColor: Colors.orange,
+                    action: SnackBarAction(
+                      label: 'View Archived',
+                      textColor: Colors.white,
+                      onPressed: () {
+                        context.go('/archived-chats');
+                      },
+                    ),
+                  ),
+                );
+              },
+              child: Text(
+                'Archive',
+                style: AppTextStyles.s14w500.copyWith(color: Colors.orange),
+              ),
+            ),
+          ],
         );
       },
     );
