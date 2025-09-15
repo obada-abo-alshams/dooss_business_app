@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_it/get_it.dart';
 import 'core/services/locator_service.dart' as di;
-import 'core/app/reels_app_wrapper.dart';
 import 'core/utils/performance_monitor.dart';
+import 'core/style/app_theme.dart';
+import 'core/routes/app_router.dart';
+import 'core/localization/language_cubit.dart';
+import 'core/localization/app_localizations.dart';
 
 Future<void> main() async {
   print('🚀 MAIN: Starting app initialization...');
@@ -33,12 +39,12 @@ Future<void> main() async {
   print('✅ MAIN: Error handling configured');
 
   // 6. Run the app
-  print('🎬 MAIN: Launching ReelsAppWrapper...');
-  runApp(const ReelsAppWrapper());
+  print('🎬 MAIN: Launching SimpleReelsApp...');
+  runApp(const SimpleReelsApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class SimpleReelsApp extends StatelessWidget {
+  const SimpleReelsApp({super.key});
 
   @override
   Widget build(BuildContext context) {

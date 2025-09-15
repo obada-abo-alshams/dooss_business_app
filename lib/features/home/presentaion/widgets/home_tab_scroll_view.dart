@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:dooss_business_app/features/home/presentaion/widgets/home_banner.dart';
-import 'package:dooss_business_app/features/home/presentaion/widgets/horizontal_reels_section.dart';
+import 'package:dooss_business_app/features/home/presentaion/widgets/simple_reels_section.dart';
 import 'package:dooss_business_app/features/home/presentaion/widgets/browse_by_type_section_wrapper.dart';
 import 'package:dooss_business_app/features/home/presentaion/widgets/content_section.dart';
 
@@ -29,7 +29,7 @@ class HomeTabScrollContent extends StatelessWidget {
       child: Column(
         children: [
           const HomeTabBannerSection(),
-          const HorizontalReelsSection(),
+          const SimpleReelsSection(),
           SizedBox(height: 24.h),
           const BrowseByTypeSectionWrapper(),
           SizedBox(height: 24.h),
