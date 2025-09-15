@@ -13,7 +13,9 @@ class ReelsPlaybackCubit extends OptimizedCubit<ReelsPlaybackState> {
   Timer? _progressTimer;
   bool _isDisposed = false;
 
-  ReelsPlaybackCubit({required this.dataSource}) : super(ReelsPlaybackState.initial());
+  ReelsPlaybackCubit({required this.dataSource}) : super(ReelsPlaybackState.initial()) {
+    print('🎬 ReelsPlaybackCubit: Constructor called successfully');
+  }
 
   /// Load reels data
   Future<void> loadReels({int page = 1, int pageSize = 20}) async {
