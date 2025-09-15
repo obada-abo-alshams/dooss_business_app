@@ -79,6 +79,21 @@ class ReelCubit extends OptimizedCubit<ReelState> {
     loadReels(page: 1, pageSize: 20);
   }
 
+  void changeReelIndex(int newIndex) {
+    if (newIndex >= 0 && newIndex < state.reels.length) {
+      safeEmit(state.copyWith(currentReelIndex: newIndex));
+      print('🔄 ReelCubit: Reel index changed to $newIndex');
+    }
+  }
+
+  void jumpToReelById(int reelId) {
+    final reelIndex = state.reels.indexWhere((reel) => reel.id == reelId);
+    if (reelIndex != -1) {
+      changeReelIndex(reelIndex);
+      print('🎯 ReelCubit: Jumped to reel with ID $reelId at index $reelIndex');
+    }
+  }
+
   void clearError() {
           safeEmit(state.copyWith(error: null));
   }

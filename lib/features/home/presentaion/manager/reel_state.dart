@@ -10,6 +10,7 @@ class ReelState {
   final bool hasNextPage;
   final int currentPage;
   final int totalCount;
+  final int currentReelIndex;
 
   const ReelState({
     this.reels = const [],
@@ -18,6 +19,7 @@ class ReelState {
     this.hasNextPage = false,
     this.currentPage = 1,
     this.totalCount = 0,
+    this.currentReelIndex = 0,
   });
 
   factory ReelState.initial() {
@@ -31,6 +33,7 @@ class ReelState {
     bool? hasNextPage,
     int? currentPage,
     int? totalCount,
+    int? currentReelIndex,
   }) {
     return ReelState(
       reels: reels ?? this.reels,
@@ -39,6 +42,7 @@ class ReelState {
       hasNextPage: hasNextPage ?? this.hasNextPage,
       currentPage: currentPage ?? this.currentPage,
       totalCount: totalCount ?? this.totalCount,
+      currentReelIndex: currentReelIndex ?? this.currentReelIndex,
     );
   }
 }

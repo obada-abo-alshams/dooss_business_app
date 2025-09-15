@@ -40,30 +40,28 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (context, child) {
         return BlocProvider(
-          create: (_) => di.sl<CarCubit>(),
-          child: BlocProvider(
-            create: (_) => LanguageCubit(),
-            child: BlocBuilder<LanguageCubit, Locale>(
-              builder: (context, locale) {
-                return MaterialApp.router(
-                  title: 'Dooss Business App',
-                  theme: AppThemes.lightTheme,
-                  routerConfig: AppRouter.router,
-                  debugShowCheckedModeBanner: false,
-                  locale: locale,
-                  supportedLocales: const [
-                    Locale('en'),
-                    Locale('ar'),
-                  ],
-                  localizationsDelegates: const [
-                    AppLocalizations.delegate,
-                    GlobalMaterialLocalizations.delegate,
-                    GlobalWidgetsLocalizations.delegate,
-                    GlobalCupertinoLocalizations.delegate,
-                  ],
-                );
-              },
-            ),
+          create: (_) => LanguageCubit(),
+          child: BlocBuilder<LanguageCubit, Locale>(
+            buildWhen: (previous, current) => previous != current,
+            builder: (context, locale) {
+              return MaterialApp.router(
+                title: 'Dooss Business App',
+                theme: AppThemes.lightTheme,
+                routerConfig: AppRouter.router,
+                debugShowCheckedModeBanner: false,
+                locale: locale,
+                supportedLocales: const [
+                  Locale('en'),
+                  Locale('ar'),
+                ],
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+              );
+            },
           ),
         );
       },

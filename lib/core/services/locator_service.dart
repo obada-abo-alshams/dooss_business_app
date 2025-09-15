@@ -8,6 +8,7 @@ import 'package:dooss_business_app/features/home/presentaion/manager/product_cub
 import 'package:dooss_business_app/features/home/presentaion/manager/service_cubit.dart';
 import 'package:dooss_business_app/features/home/presentaion/manager/reel_cubit.dart';
 import 'package:dooss_business_app/features/home/presentaion/manager/home_cubit.dart';
+import 'package:dooss_business_app/features/home/presentaion/manager/maps_cubit.dart';
 import 'package:dooss_business_app/features/home/data/data_source/car_remote_data_source.dart';
 import 'package:dooss_business_app/features/home/data/data_source/product_remote_data_source.dart';
 import 'package:dooss_business_app/features/home/data/data_source/product_remote_data_source_imp.dart';
@@ -33,6 +34,7 @@ Future<void> init() async {
   sl.registerFactory<ServiceCubit>(() => ServiceCubit(sl<ServiceRemoteDataSource>()));
   sl.registerFactory<ReelCubit>(() => ReelCubit(dataSource: sl<ReelRemoteDataSource>()));
   sl.registerFactory<HomeCubit>(() => HomeCubit());
+  sl.registerFactory<MapsCubit>(() => MapsCubit());
   sl.registerFactory<AuthCubit>(()=>AuthCubit(sl<AuthRemoteDataSourceImp>()));
   sl.registerFactory<ChatCubit>(() => ChatCubit(sl<ChatRemoteDataSource>()));
   sl.registerFactory<DealerProfileCubit>(() => DealerProfileCubit(sl<DealerProfileRemoteDataSource>()));
