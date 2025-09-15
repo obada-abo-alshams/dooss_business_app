@@ -1,32 +1,40 @@
-import 'package:dooss_business_app/core/style/app_theme.dart';      
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:get_it/get_it.dart';
 import 'core/services/locator_service.dart' as di;
-import 'core/routes/app_router.dart';
-import 'features/home/presentaion/manager/car_cubit.dart';
-import 'core/localization/language_cubit.dart';
-import 'core/localization/app_localizations.dart';
-import 'core/services/navigation_service.dart';
+import 'core/app/reels_integrated_app.dart';
 import 'core/utils/performance_monitor.dart';
 
-void main() async {
+Future<void> main() async {
+  print('🚀 MAIN: Starting app initialization...');
+  
+  // 1. Ensure binding is initialized
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize dependency injection
+  print('✅ MAIN: Flutter binding initialized');
+
+  // 2. 🔥 THE KEY FIX: Reset GetIt to clear any stale state
+  print('🔥 MAIN: Resetting GetIt to clear stale state...');
+  await GetIt.instance.reset();
+  print('✅ MAIN: GetIt reset complete');
+
+  // 3. Re-initialize all dependencies
+  print('🔧 MAIN: Initializing dependencies...');
   await di.init();
-  
-  // Initialize performance monitoring
+  print('✅ MAIN: Dependencies initialized');
+
+  // 4. Initialize performance monitoring
   PerformanceMonitor().init();
-  
-  // Set up error handling
+  print('✅ MAIN: Performance monitoring initialized');
+
+  // 5. Set up error handling
   FlutterError.onError = (FlutterErrorDetails details) {
-    // In production, you might want to send this to a crash reporting service
+    print('❌ FLUTTER ERROR: ${details.exception}');
     FlutterError.presentError(details);
   };
-  
-  runApp(const MyApp());
+  print('✅ MAIN: Error handling configured');
+
+  // 6. Run the app
+  print('🎬 MAIN: Launching ReelsIntegratedApp...');
+  runApp(const ReelsIntegratedApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -40,30 +48,28 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (context, child) {
         return BlocProvider(
-          create: (_) => di.sl<CarCubit>(),
-          child: BlocProvider(
-            create: (_) => LanguageCubit(),
-            child: BlocBuilder<LanguageCubit, Locale>(
-              builder: (context, locale) {
-                return MaterialApp.router(
-                  title: 'Dooss Business App',
-                  theme: AppThemes.lightTheme,
-                  routerConfig: AppRouter.router,
-                  debugShowCheckedModeBanner: false,
-                  locale: locale,
-                  supportedLocales: const [
-                    Locale('en'),
-                    Locale('ar'),
-                  ],
-                  localizationsDelegates: const [
-                    AppLocalizations.delegate,
-                    GlobalMaterialLocalizations.delegate,
-                    GlobalWidgetsLocalizations.delegate,
-                    GlobalCupertinoLocalizations.delegate,
-                  ],
-                );
-              },
-            ),
+          create: (_) => LanguageCubit(),
+          child: BlocBuilder<LanguageCubit, Locale>(
+            buildWhen: (previous, current) => previous != current,
+            builder: (context, locale) {
+              return MaterialApp.router(
+                title: 'Dooss Business App',
+                theme: AppThemes.lightTheme,
+                routerConfig: AppRouter.router,
+                debugShowCheckedModeBanner: false,
+                locale: locale,
+                supportedLocales: const [
+                  Locale('en'),
+                  Locale('ar'),
+                ],
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+              );
+            },
           ),
         );
       },

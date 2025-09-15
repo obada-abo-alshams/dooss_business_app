@@ -2,6 +2,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../constants/app_config.dart';
 
 class LocationService {
   static Future<bool> requestLocationPermission() async {
@@ -119,12 +120,10 @@ class LocationService {
   }) async {
     try {
       // Use Google Directions API to get real road distance
-      const apiKey = 'AIzaSyCvFo9bVexv1f4O4lzdYqjPH7b-yf62k_c';
-      
       final url = 'https://maps.googleapis.com/maps/api/directions/json?'
           'origin=$startLatitude,$startLongitude&'
           'destination=$endLatitude,$endLongitude&'
-          'key=$apiKey';
+          'key=${AppConfig.googleMapsApiKey}';
       
       print('🗺️ Requesting route from Google Directions API...');
       final response = await http.get(Uri.parse(url));

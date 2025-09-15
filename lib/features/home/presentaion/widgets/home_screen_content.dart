@@ -68,6 +68,8 @@ class HomeBottomNavigationWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(
+      buildWhen: (previous, current) =>
+          previous.currentIndex != current.currentIndex,
       builder: (context, homeState) {
         return HomeBottomNavigation(
           currentIndex: homeState.currentIndex,

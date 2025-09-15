@@ -5,7 +5,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/text_styles.dart';
+import '../../../../core/constants/app_config.dart';
 import '../../../../core/services/location_service.dart';
+import '../../../../core/services/maps_service.dart';
 import '../../data/models/service_model.dart';
 
 class NearbyServicesMapWidget extends StatefulWidget {
@@ -118,8 +120,8 @@ class _NearbyServicesMapWidgetState extends State<NearbyServicesMapWidget> {
                 initialCameraPosition: CameraPosition(
                   target: _userLocation != null
                       ? LatLng(_userLocation!.latitude, _userLocation!.longitude)
-                      : const LatLng(25.2048, 55.2708), // Dubai fallback
-                  zoom: 12.0,
+                      : const LatLng(AppConfig.defaultLatitude, AppConfig.defaultLongitude),
+                  zoom: AppConfig.defaultZoom,
                 ),
                 markers: _markers,
                 myLocationEnabled: true,

@@ -91,6 +91,7 @@ class NativeVideoWidget extends StatefulWidget {
 class _NativeVideoWidgetState extends State<NativeVideoWidget> {
   VideoPlayerController? _controller;
   bool _isInitialized = false;
+  bool _isDisposed = false;
   
   @override
   void initState() {
@@ -101,7 +102,7 @@ class _NativeVideoWidgetState extends State<NativeVideoWidget> {
   @override
   void didUpdateWidget(NativeVideoWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.videoUrl != widget.videoUrl) {
+    if (oldWidget.videoUrl != widget.videoUrl && !_isDisposed) {
       print('🔄 NativeVideoWidget: Video URL changed from ${oldWidget.videoUrl} to ${widget.videoUrl}');
       _disposeController();
       _initializeVideo();
@@ -121,12 +122,16 @@ class _NativeVideoWidgetState extends State<NativeVideoWidget> {
       _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
       
       _controller!.addListener(() {
+        if (_isDisposed) return;
+        
         if (_controller!.value.isInitialized && !_isInitialized) {
-          setState(() {
-            _isInitialized = true;
-          });
-          _muteVideo(); // إيقاف الصوت عند التهيئة
-          widget.onVideoReady?.call();
+          if (mounted && !_isDisposed) {
+            setState(() {
+              _isInitialized = true;
+            });
+            _muteVideo(); // إيقاف الصوت عند التهيئة
+            widget.onVideoReady?.call();
+          }
         }
         
         // التحقق من انتهاء الفيديو وإعادة التشغيل
@@ -134,7 +139,7 @@ class _NativeVideoWidgetState extends State<NativeVideoWidget> {
           widget.onVideoEnded?.call();
           
           // إعادة تشغيل الفيديو إذا كان loop = true
-          if (widget.loop) {
+          if (widget.loop && !_isDisposed) {
             _controller!.seekTo(Duration.zero);
             _controller!.play();
             print('🔄 NativeVideoWidget: Video looped');
@@ -148,9 +153,11 @@ class _NativeVideoWidgetState extends State<NativeVideoWidget> {
       }
       await _controller!.play();
       
-      setState(() {
-        _isInitialized = true;
-      });
+      if (mounted && !_isDisposed) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
       
     } catch (e) {
       print('❌ NativeVideoWidget: Error initializing video: $e');
@@ -161,14 +168,18 @@ class _NativeVideoWidgetState extends State<NativeVideoWidget> {
   void _disposeController() {
     _controller?.dispose();
     _controller = null;
-    setState(() {
-      _isInitialized = false;
-    });
+    if (mounted && !_isDisposed) {
+      setState(() {
+        _isInitialized = false;
+      });
+    }
   }
   
   @override
   void dispose() {
+    _isDisposed = true;
     _controller?.dispose();
+    _controller = null;
     super.dispose();
   }
   

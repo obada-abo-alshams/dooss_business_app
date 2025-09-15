@@ -27,6 +27,9 @@ class ContentSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(
+      buildWhen: (previous, current) =>
+          previous.currentIndex != current.currentIndex ||
+          previous.selectedBrowseType != current.selectedBrowseType,
       builder: (context, homeState) {
         // If we're on the home tab, show content based on browse type
         if (homeState.currentIndex == 0) {
@@ -56,6 +59,10 @@ class ContentSection extends StatelessWidget {
               );
             case 1: // Products
               return BlocBuilder<ProductCubit, ProductState>(
+                buildWhen: (previous, current) =>
+                    previous.products != current.products ||
+                    previous.isLoading != current.isLoading ||
+                    previous.error != current.error,
                 builder: (context, state) {
                   if (state.isLoading) {
                     return LoadingSection(title: 'Car Products');
@@ -70,6 +77,10 @@ class ContentSection extends StatelessWidget {
               );
             case 2: // Services
               return BlocBuilder<ServiceCubit, ServiceState>(
+                buildWhen: (previous, current) =>
+                    previous.services != current.services ||
+                    previous.isLoading != current.isLoading ||
+                    previous.error != current.error,
                 builder: (context, state) {
                   if (state.isLoading) {
                     return LoadingSection(title: 'Nearby Car Services');
@@ -84,6 +95,10 @@ class ContentSection extends StatelessWidget {
               );
             default:
               return BlocBuilder<CarCubit, CarState>(
+                buildWhen: (previous, current) =>
+                    previous.cars != current.cars ||
+                    previous.isLoading != current.isLoading ||
+                    previous.error != current.error,
                 builder: (context, state) {
                   if (state.isLoading) {
                     return LoadingSection(title: 'Cars Available Now');
@@ -112,6 +127,10 @@ class ContentSection extends StatelessWidget {
         switch (homeState.currentIndex) {
           case 1: // Services
             return BlocBuilder<ServiceCubit, ServiceState>(
+              buildWhen: (previous, current) =>
+                  previous.services != current.services ||
+                  previous.isLoading != current.isLoading ||
+                  previous.error != current.error,
               builder: (context, state) {
                 if (state.isLoading) {
                   return LoadingSection(title: 'Nearby Car Services');
@@ -126,6 +145,10 @@ class ContentSection extends StatelessWidget {
             );
           case 2: // Reels
             return BlocBuilder<ReelCubit, ReelState>(
+              buildWhen: (previous, current) =>
+                  previous.reels != current.reels ||
+                  previous.isLoading != current.isLoading ||
+                  previous.error != current.error,
               builder: (context, state) {
                 if (state.isLoading) {
                   return LoadingSection(title: 'Market Reels');
@@ -144,6 +167,10 @@ class ContentSection extends StatelessWidget {
             return const AccountSection();
           default:
             return BlocBuilder<CarCubit, CarState>(
+              buildWhen: (previous, current) =>
+                  previous.cars != current.cars ||
+                  previous.isLoading != current.isLoading ||
+                  previous.error != current.error,
               builder: (context, state) {
                 if (state.isLoading) {
                   return LoadingSection(title: 'Cars Available Now');

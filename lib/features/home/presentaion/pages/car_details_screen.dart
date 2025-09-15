@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../../../core/constants/app_config.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../core/constants/text_styles.dart';
 import '../../../../core/routes/route_names.dart';
@@ -74,9 +75,8 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
     }
 
     try {
-      const apiKey = 'AIzaSyCvFo9bVexv1f4O4lzdYqjPH7b-yf62k_c';
       final encodedLocation = Uri.encodeComponent(location);
-      final url = 'https://maps.googleapis.com/maps/api/geocode/json?address=$encodedLocation&key=$apiKey';
+      final url = 'https://maps.googleapis.com/maps/api/geocode/json?address=$encodedLocation&key=${AppConfig.googleMapsApiKey}';
       
       print('🌐 CarDetails: Geocoding location: $location');
       final response = await http.get(Uri.parse(url));
@@ -171,12 +171,11 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
     }
 
     try {
-      const apiKey = 'AIzaSyCvFo9bVexv1f4O4lzdYqjPH7b-yf62k_c';
       final url = 'https://maps.googleapis.com/maps/api/directions/json?'
           'origin=${_userLocation!.latitude},${_userLocation!.longitude}&'
           'destination=$carLat,$carLon&'
           'mode=driving&'
-          'key=$apiKey';
+          'key=${AppConfig.googleMapsApiKey}';
 
       print('🌐 CarDetails: Requesting route from Google Directions API...');
       print('📍 CarDetails: Origin: ${_userLocation!.latitude},${_userLocation!.longitude}');
@@ -268,6 +267,10 @@ class _CarDetailsScreenState extends State<CarDetailsScreen> {
       child: Scaffold(
         backgroundColor: AppColors.white,
         body: BlocBuilder<CarCubit, CarState>(
+          buildWhen: (previous, current) =>
+              previous.selectedCar != current.selectedCar ||
+              previous.isLoading != current.isLoading ||
+              previous.error != current.error,
           builder: (context, state) {
             if (state.isLoading) {
               return const Center(
