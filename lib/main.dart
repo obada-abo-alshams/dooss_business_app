@@ -6,10 +6,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/services/locator_service.dart' as di;
 import 'core/routes/app_router.dart';
 import 'features/home/presentaion/manager/car_cubit.dart';
+import 'features/home/presentaion/manager/reels_playback_cubit.dart';
 import 'core/localization/language_cubit.dart';
 import 'core/localization/app_localizations.dart';
 import 'core/services/navigation_service.dart';
 import 'core/utils/performance_monitor.dart';
+import 'core/observers/reels_navigation_observer.dart';
+import 'core/observers/reels_lifecycle_observer.dart';
+import 'core/app/reels_integrated_app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +30,7 @@ void main() async {
     FlutterError.presentError(details);
   };
   
-  runApp(const MyApp());
+  runApp(const ReelsIntegratedApp());
 }
 
 class MyApp extends StatelessWidget {

@@ -36,11 +36,23 @@ import '../../core/services/locator_service.dart' as di;
 import '../../features/chat/presentation/pages/create_chat_screen.dart';
 import '../../features/chat/presentation/pages/chat_test_screen.dart';
 import '../../features/home/presentaion/pages/reels_screen.dart';
+import '../../features/home/presentaion/pages/full_screen_reels_viewer.dart';
 import '../../features/home/presentaion/manager/reel_cubit.dart';
 class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: RouteNames.onBoardingScreen,
-    routes: [
+    routes: _routes,
+  );
+
+  static GoRouter createRouterWithObserver(NavigatorObserver observer) {
+    return GoRouter(
+      initialLocation: RouteNames.onBoardingScreen,
+      observers: [observer],
+      routes: _routes,
+    );
+  }
+
+  static final List<RouteBase> _routes = [
       GoRoute(
         path: RouteNames.onBoardingScreen,
         builder: (context, state) => const OnBoardingScreen(),
@@ -290,14 +302,11 @@ class AppRouter {
          },
        ),
        
-       // Reels Routes
-       GoRoute(
-         path: RouteNames.reelsScreen,
-         builder: (context, state) => BlocProvider(
-           create: (context) => di.sl<ReelCubit>(),
-           child: const ReelsScreen(),
-         ),
-       ),
+      // Reels Routes
+      GoRoute(
+        path: RouteNames.reelsScreen,
+        builder: (context, state) => const FullScreenReelsViewer(),
+      ),
        GoRoute(
          path: RouteNames.reelsWithId,
          builder: (context, state) {
@@ -323,6 +332,5 @@ class AppRouter {
            );
          },
        ),
-    ],
-  );
+    ];
 }
