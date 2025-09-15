@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'core/services/locator_service.dart' as di;
-import 'core/app/reels_integrated_app.dart';
+import 'core/app/reels_app_wrapper.dart';
 import 'core/utils/performance_monitor.dart';
 
 Future<void> main() async {
@@ -33,8 +33,8 @@ Future<void> main() async {
   print('✅ MAIN: Error handling configured');
 
   // 6. Run the app
-  print('🎬 MAIN: Launching ReelsIntegratedApp...');
-  runApp(const ReelsIntegratedApp());
+  print('🎬 MAIN: Launching ReelsAppWrapper...');
+  runApp(const ReelsAppWrapper());
 }
 
 class MyApp extends StatelessWidget {

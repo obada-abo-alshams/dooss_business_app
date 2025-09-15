@@ -32,6 +32,7 @@ import 'package:dooss_business_app/features/home/presentaion/manager/service_cub
 import 'package:dooss_business_app/features/home/data/data_source/reel_remote_data_source.dart';
 import 'package:dooss_business_app/features/home/data/data_source/reel_remote_data_source_imp.dart';
 import 'package:dooss_business_app/features/home/presentaion/manager/reel_cubit.dart';
+import 'package:dooss_business_app/features/home/presentaion/manager/reels_cubit.dart';
 import 'package:dooss_business_app/features/home/presentaion/manager/reels_playback_cubit.dart';
 
 // Other Cubits
@@ -168,11 +169,15 @@ Future<void> init() async {
   );
   print('✅ DI: ServiceCubit registered');
   
-  // Reel Cubit (Old one)
+  // Reel Cubit (Old one for data loading)
   sl.registerFactory<ReelCubit>(
     () => ReelCubit(dataSource: sl<ReelRemoteDataSource>())
   );
   print('✅ DI: ReelCubit registered');
+  
+  // 🎬 NEW LIGHTWEIGHT REELS CUBIT - GLOBAL PLAYBACK STATE
+  sl.registerLazySingleton<ReelsCubit>(() => ReelsCubit());
+  print('✅ DI: ReelsCubit (lightweight) registered');
   
   // 🎬 REELS PLAYBACK CUBIT - THE CRITICAL SINGLETON
   print('🎬 DI: About to register ReelsPlaybackCubit...');
